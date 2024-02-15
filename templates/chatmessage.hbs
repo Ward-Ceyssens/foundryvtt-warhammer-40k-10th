@@ -1,0 +1,76 @@
+<div class="unit-summary">
+    <div class="units">
+        {{#each models as | model |}}
+            <div>
+                {{model.num}}x {{model.name}}
+            </div>
+        {{/each}}
+    </div>
+    <div>attack</div>
+    <div class="targets">
+        {{#each targets as | target |}}
+            <div>
+                {{target.num}}x {{target.name}}
+            </div>
+        {{/each}}
+    </div>
+    <div>with</div>
+    <div class="weapon">
+         {{weapon.name}}
+    </div>
+</div>
+<details class="battle-summary">
+    <summary>
+        A:{{stats.attacks}}
+        H:{{stats.hits}}
+        W:{{stats.wounds}}
+        !S:{{stats.saves}}
+        D:{{stats.damage}}
+    </summary>
+    {{#each details as | model |}}
+        <hr>
+        <details class="unit-attack-summary">
+        <summary>
+            <span class="selectable-target-name" id="{{model.model.document._id}}">{{model.model.document.name}}</span>
+            <div>Attacks:{{{model.attacksRoll}}}</div>
+            H:{{model.stats.hits}}
+            W:{{model.stats.wounds}}
+            !S:{{model.stats.saves}}
+            D:{{model.stats.damage}}
+        </summary>
+        <table>
+            <thead>
+            <tr style="text-align: center">
+                <th>
+                    Hit
+                </th>
+                <th>
+                    Wnd
+                </th>
+                <th>
+                    !sav
+                </th>
+                <th>
+                    Dmg
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#each model.details as | attack |}}
+                <tr>
+                    {{#each attack as | roll |}}
+                        <td>
+                            {{{roll}}}
+                        </td>
+                    {{/each}}
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </details>
+    {{/each}}
+
+
+
+
+</details>

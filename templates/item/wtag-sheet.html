@@ -1,0 +1,21 @@
+<form class="flexcol {{cssClass}}" autocomplete="off">
+    <header class="sheet-header">
+        <div class="header-fields">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{item.name}}" placeholder="Name" />
+            </h1>
+        </div>
+    </header>
+
+
+    {{!-- Sheet Body --}}
+    <section class="sheet-body">
+        <div class="col">
+            <label for="value">Value</label>
+            <input id="value" name="system.value" type="text" value="{{item.system.value}}" style="width: -webkit-fill-available" data-dtype="String"/>
+            <label for="optional">Optional?</label>
+            <input id="optional" type="checkbox" name="system.optional" {{checked item.system.optional}} data-dtype="Boolean">
+        </div>
+            {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
+    </section>
+</form>

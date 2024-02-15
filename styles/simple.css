@@ -1,0 +1,214 @@
+.warhammer {
+  /* Sheet Tabs */
+  /* Items List */
+  /* Attributes */
+}
+.warhammer.sheet .window-content{
+  background: #dfe0e2;
+  padding: unset;
+}
+.warhammer.sheet.actor nav.sheet-tabs{
+  /*border: 0;*/
+  flex: unset;
+}
+.warhammer.sheet header.sheet-header{
+  align-items: unset;
+  flex: unset;
+}
+.warhammer.sheet .editor{
+  min-height: 50px;
+}
+.warhammer.sheet details .editor{
+  min-height: unset;
+}
+
+.warhammer.sheet.actor header.sheet-header h1 input {
+  height: 27px;
+  border: unset;
+  background: unset;
+  color: white;
+  text-transform: uppercase;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: .1rem;
+  line-height: 2.5rem;
+  font-family: ui-serif;
+}
+.warhammer.sheet.actor .header-fields{
+  position: relative;
+  color: white;
+  left: 5%;
+}
+.warhammer.sheet.actor .profile-img, .warhammer.sheet img {
+  border: unset;
+  position: relative;
+  height: unset;
+}
+
+.warhammer.sheet.actor .stats {
+  display: flex;
+  text-align: center;
+  font-size: large;
+}
+
+.warhammer.sheet.actor .stats .col {
+  padding-left: 7px;
+}
+.warhammer.sheet.actor .sheet-header {
+  background: black;
+  padding: 5px;
+}
+.warhammer.sheet.actor .value {
+  display: flex;
+  align-items: center;
+  background: darkgreen;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  color: darkgreen;
+  clip-path: polygon(100% 0,100% 75%,75% 100%,0 100%,0 25%,25% 0);
+  border: darkgreen;
+}
+
+.warhammer.sheet.actor .value > input, .warhammer.sheet.actor .val-and-max > input{
+  display: flex;
+  align-items: center;
+  background: #dfe0e2;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 40px;
+  height: 40px;
+  color: darkgreen;
+  clip-path: polygon(100% 0,100% 75%,75% 100%,0 100%,0 25%,25% 0);
+  border: darkgreen;
+}
+
+.warhammer.sheet.actor .val-and-max > input{
+  position: unset;
+}
+.warhammer.sheet.actor .val-and-max-container {
+  display: flex;
+  align-items: center;
+  background: darkgreen;
+  position: relative;
+  width: 88px;
+  height: 44px;
+  color: darkgreen;
+  clip-path: polygon(100% 0,100% 75%,87% 100%,0 100%,0 25%,12% 0);
+  border: darkgreen;
+}
+
+.warhammer.sheet.actor .val-and-max-container > .val-and-max {
+  display: flex;
+  align-items: center;
+  background: #dfe0e2;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 84px;
+  height: 40px;
+  color: darkgreen;
+  clip-path: polygon(100% 0,100% 75%,87% 100%,0 100%,0 25%,12% 0);
+  border: darkgreen;
+}
+
+.warhammer.sheet.actor header.sheet-header:before {
+  background-color: darkgreen;
+  content: "";
+  height: 90px;
+  left: 5%;
+  position: absolute;
+  top: 32px;
+  width: 95%;
+  clip-path: polygon(0 0,0 100%,360px 100%,410px 50%,100% 50%,100% 0)
+}
+
+.warhammer.sheet.actor .side-frill {
+  background-color: darkgreen;
+  height: calc(100% - 157px);
+  position: absolute;
+  bottom: 0;
+  width: 92px;
+  clip-path: polygon(0 0,0 100%,100% 100%,100% calc(100% - 80px),5px calc(100% - 150px),5px 0)
+}
+
+.warhammer.sheet.actor input:focus {
+  box-shadow: unset;
+}
+.warhammer.sheet.actor .rollable:hover, .selectable-target-name:hover {
+  text-shadow: 0 0 5px var(--color-shadow-primary);
+}
+
+.warhammer.sheet.actor .item-name, .warhammer.sheet.item .item-name {
+  text-align: left !important;
+  width: 40%;
+}
+.warhammer.sheet.actor .item-table > tbody > tr > td, .warhammer.sheet.item .item-table > tbody > tr > td{
+  text-align: center;
+  vertical-align: top ;
+}
+.warhammer.sheet.actor .table-icon, .warhammer.sheet.item .table-icon {
+  text-align: center;
+  filter: invert(87%) sepia(100%) saturate(0) hue-rotate(303deg) brightness(104%) contrast(101%);
+}
+.warhammer.sheet.actor .item-table > tbody > tr > th, .warhammer.sheet.item .item-table > tbody > tr > th {
+  background: darkgreen;
+  color: #dfe0e2;
+}
+
+.warhammer.sheet.actor .bottom {
+  position: absolute;
+  border: darkgreen 2px solid;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  background: #dfe0e2;
+}
+
+.warhammer.sheet.actor .faction, .warhammer.sheet.actor .tags {
+  border: darkgreen 2px solid;
+  display: contents;
+}
+
+.warhammer.sheet.actor .faction > label, .warhammer.sheet.actor .tags > label{
+  text-transform: uppercase;
+}
+
+.warhammer.sheet.actor .faction > input, .warhammer.sheet.actor .tags > input{
+  font-weight: bold;
+  border: none;
+  background: right;
+}
+
+.warhammer.sheet.actor .faction > input{
+  max-width: fit-content;
+}
+.warhammer.sheet.actor .base{
+  width: 92px;
+  position: absolute;
+  bottom: 30px;
+  border: darkgreen 2px solid;
+  border-bottom: 0;
+  background: #dfe0e2;
+}
+.warhammer.sheet.actor .weapon-tag{
+  background: white;
+}
+
+.warhammer.sheet.item .row{
+  display: flex;
+}
+
+
+.chat-message.message .weapon,
+.chat-message.message .units,
+.chat-message.message .targets
+{
+  font-weight: bold;
+}
+.chat-message.message tbody
+{
+  text-align: center;
+}

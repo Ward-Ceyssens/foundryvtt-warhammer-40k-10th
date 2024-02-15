@@ -1,0 +1,9 @@
+# IDE
+.idea/
+.vs/
+
+# Node Modules
+node_modules/
+package-lock.json
+
+warhammer-40k-10th.lock

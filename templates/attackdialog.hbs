@@ -1,0 +1,20 @@
+<div class="attack-dialog">
+    <div class="row">
+        <div class="col">
+            <label for="hitroll">hit roll bonus</label>
+            <input id="hitroll" name="hitroll" type="text" value="{{actor.system.modifiers.hitroll}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+        </div>
+        <div class="col">
+            <label for="woundroll">wound roll</label>
+            <input id="woundroll" name="woundroll" type="text" value="{{actor.system.modifiers.woundroll}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+        </div>
+    </div>
+    <div class="tags">
+        {{#each weapon.items as | tag |}}
+            {{#if tag.system.optional}}
+                <label for="optional">{{tag.name}} {{tag.system.value}}</label>
+                <input id="{{tag._id}}" type="checkbox" name="optionaltags" {{checked item.system.optional}} data-dtype="Boolean">
+            {{/if}}
+        {{/each}}
+    </div>
+</div>

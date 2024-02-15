@@ -1,0 +1,76 @@
+<form class="flexcol {{cssClass}}" autocomplete="off">
+    <header class="sheet-header">
+        <div class="header-fields">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{data.name}}" placeholder="Name" />
+            </h1>
+        </div>
+    </header>
+
+
+    {{!-- Sheet Body --}}
+    <section class="sheet-body">
+        <div class="row">
+            <div class="col">
+                <label for="range">Range (0 for melee)</label>
+                <input id="range" name="system.range" type="text" value="{{data.system.range}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+            </div>
+            <div class="col">
+                <label for="attacks">Attacks</label>
+                <input id="attacks" name="system.attacks" type="text" value="{{data.system.attacks}}" style="width: -webkit-fill-available" data-dtype="String"/>
+            </div>
+            <div class="col">
+                <label for="skill">Skill</label>
+                <input id="skill" name="system.skill" type="text" value="{{data.system.skill}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="strength">Strength</label>
+                <input id="strength" name="system.strength" type="text" value="{{data.system.strength}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+            </div>
+            <div class="col">
+                <label for="ap">AP</label>
+                <input id="ap" name="system.ap" type="text" value="{{data.system.ap}}" style="width: -webkit-fill-available" data-dtype="Number"/>
+            </div>
+            <div class="col">
+                <label for="damage">Damage</label>
+                <input id="damage" name="system.damage" type="text" value="{{data.system.damage}}" style="width: -webkit-fill-available" data-dtype="String"/>
+            </div>
+        </div>
+        <table class="item-table">
+            <tr>
+                <th  style="width: 28px">
+                    <img class="table-icon" style="height: 20px" src="systems/warhammer-40k/svg/Type.svg" width="20" height="20"/>
+                </th>
+                <th colspan="2" class="item-name">
+                    <label style="text-transform: uppercase">abilities</label>
+                </th>
+                <th>
+                    <a class="item-control item-create" title="Add tag" data-type="wtag" data-weapon="{{ _id }}">
+                        <i class="fas fa-plus"></i> Add Tag</a>
+                </th>
+            </tr>
+            {{#each items as | item |}}
+                <tr>
+                    <td>
+                    </td>
+                    <td colspan="2" class="item-name">
+                        <details>
+                            <summary>
+                                {{item.name}} {{item.system.value}}
+                            </summary>
+                            {{editor item.system.description target="item.system.description" rollData=rollData button=true owner=owner editable=false}}
+                        </details>
+
+                    </td>
+                    <td>
+                        <a class="item-control item-edit" data-itemId="{{ item._id }}" title="Edit Item"><i class="fas fa-edit"></i></a>
+                        <a class="item-control item-delete" data-itemId="{{ item._id }}" title="Delete Item"><i class="fas fa-trash"></i></a>
+                    </td>
+
+                </tr>
+            {{/each}}
+        </table>
+    </section>
+</form>

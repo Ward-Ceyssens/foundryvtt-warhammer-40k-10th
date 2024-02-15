@@ -1,0 +1,20 @@
+{
+"Actor": {
+  "types": ["model"],
+  "htmlFields": ["biography"],
+  "model": {}
+},
+  "Item": {
+    "types": ["ability", "weapon", "wtag"],
+    "templates": {
+      "base": {
+        "description": ""
+      }
+    },
+    "ability": {
+      "templates" : ["base"]
+    },
+    "weapon": {},
+    "wtag": {}
+  }
+}
