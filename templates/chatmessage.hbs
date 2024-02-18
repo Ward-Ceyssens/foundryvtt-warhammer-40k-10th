@@ -26,6 +26,14 @@
         W:{{stats.wounds}}
         !S:{{stats.saves}}
         D:{{stats.damage}}
+        <div>
+            {{#if hazardous.destroyed }}
+                Hazardous: {{hazardous.destroyed}} units destroyed
+            {{/if}}
+            {{#if hazardous.wounded }}
+                Hazardous: {{hazardous.wounded}} units wounded
+            {{/if}}
+        </div>
     </summary>
     {{#each details as | model |}}
         <hr>
@@ -37,6 +45,7 @@
             W:{{model.stats.wounds}}
             !S:{{model.stats.saves}}
             D:{{model.stats.damage}}
+            <div>{{{model.hazardousHtml}}}</div>
         </summary>
         <table>
             <thead>
@@ -57,13 +66,28 @@
             </thead>
             <tbody>
             {{#each model.details as | attack |}}
+                {{#each attack.rest as | rest |}}
                 <tr>
-                    {{#each attack as | roll |}}
-                        <td>
-                            {{{roll}}}
-                        </td>
-                    {{/each}}
+                {{#if @first}}
+                    <td>
+                        {{{attack.hitroll}}}
+                    </td>
+                {{else}}
+                    <td>
+                        |
+                    </td>
+                {{/if}}
+                    <td>
+                        {{{rest.wound}}}
+                    </td>
+                    <td>
+                        {{{rest.save}}}
+                    </td>
+                    <td>
+                        {{{rest.damage}}}
+                    </td>
                 </tr>
+                {{/each}}
             {{/each}}
             </tbody>
         </table>

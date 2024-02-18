@@ -22,6 +22,7 @@ export class WarhammerWeaponSheet extends ItemSheet {
     async getData(options) {
         const context = super.getData(options)
         context.system = context.data.system;
+        context.SYSTEM_ID = SYSTEM_ID;
         context._id = this.item._id
         this._prepareItems(context)
         return context;

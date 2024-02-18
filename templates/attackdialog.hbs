@@ -9,11 +9,18 @@
             <input id="woundroll" name="woundroll" type="text" value="{{actor.system.modifiers.woundroll}}" style="width: -webkit-fill-available" data-dtype="Number"/>
         </div>
     </div>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <input id="cover" type="checkbox" name="cover" {{checked target.system.modiefiers.cover}} data-dtype="Boolean">
+            <label for="cover">has cover?</label>
+        </div>
+    </div>
     <div class="tags">
         {{#each weapon.items as | tag |}}
             {{#if tag.system.optional}}
-                <label for="optional">{{tag.name}} {{tag.system.value}}</label>
                 <input id="{{tag._id}}" type="checkbox" name="optionaltags" {{checked item.system.optional}} data-dtype="Boolean">
+                <label for="optional">{{tag.name}} {{tag.system.value}}</label>
             {{/if}}
         {{/each}}
     </div>

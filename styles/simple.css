@@ -212,3 +212,7 @@
 {
   text-align: center;
 }
+
+.attack-dialog .row{
+  display: flex;
+}

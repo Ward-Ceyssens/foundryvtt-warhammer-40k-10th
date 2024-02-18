@@ -186,13 +186,20 @@ export class WarhammerActorSheet extends ActorSheet {
         event.preventDefault();
         const element = event.currentTarget;
         const dataset = element.dataset;
+        //TODO use safe clones instead of editing actual item
         const weapon = this.actor.items.get(dataset.documentId)
+        let weaponData = duplicate(weapon.system)
+        weaponData.name = weapon.name
+        let actorData = duplicate(this.actor.system)
+        actorData.tags = duplicate(this.actor.system.tags) //because fuck js
+
         for (let tagid of weapon.system.tags) {
-            if (!weapon.items)
-                weapon.items = []
+            if (!weaponData.items)
+                weaponData.items = []
             let tag = this.actor.items.get(tagid)
-            weapon.items.push(tag)
+            weaponData.items.push(tag)
         }
+
         const targeted = game.user.targets;
         let controlled = this._inRange(canvas.tokens.controlled, targeted, weapon.system.range);
 
@@ -231,7 +238,7 @@ export class WarhammerActorSheet extends ActorSheet {
         }
         let d = new Dialog({
             title: "Test Dialog",
-            content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({actor:this, weapon:weapon}),
+            content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({actor:this, weapon:weaponData, target:targeted.first()}),
             buttons: {
                 one: {
                     icon: '<i class="fas fa-check"></i>',
@@ -240,9 +247,10 @@ export class WarhammerActorSheet extends ActorSheet {
                         let modifiers = {
                             hitroll: parseInt(html.find('input[name=hitroll]')[0].value) || 0 ,
                             woundroll: parseInt(html.find('input[name=woundroll]')[0].value) || 0,
+                            cover: $.map(html.find('input[name=cover]:checked'),x => x.checked)[0],
                             tags: $.map(html.find('input[name=optionaltags]:checked'),x => x.id)
                         }
-                        this.fullAttack(controlled, targeted, weapon, modifiers)
+                        this.fullAttack(controlled, targeted, weaponData, actorData, modifiers)
                     }
                 },
             },
@@ -250,27 +258,28 @@ export class WarhammerActorSheet extends ActorSheet {
         d.render(true);
     }
 
-    async fullAttack(controlled, targeted, weapon, modifiers) {
+    async fullAttack(controlled, targeted, weaponData, actorData, modifiers) {
+        let targetData = duplicate(targeted.first().actor.system)
+        targetData.tags = duplicate(targeted.first().actor.system.tags)
         //apply changes from dialog
-        this.actor.system.modifiers.hitroll += modifiers.hitroll
-        this.actor.system.modifiers.woundroll += modifiers.woundroll
-        weapon.items = weapon.items.filter(x => !x.system.optional || modifiers.tags.includes(x._id))
+        actorData.modifiers.hitroll += modifiers.hitroll
+        actorData.modifiers.woundroll += modifiers.woundroll
+        actorData.modifiers.grants.cover |= modifiers.cover
+        weaponData.items = weaponData.items.filter(x => !x.system.optional || modifiers.tags.includes(x._id))
+        if (weaponData.items.find(x => x.name.toUpperCase() == "IGNORES COVER"))
+            actorData.modifiers.grants.cover=false
 
-        if (weapon.items.find(x => x.name.toUpperCase() == "IGNORES COVER"))
-            this.actor.system.modifiers.grants.cover=false
+        if (weaponData.items.find(x => x.name.toUpperCase() == "LANCE"))
+            actorData.modifiers.woundroll+=1
 
-        if (weapon.items.find(x => x.name.toUpperCase() == "LANCE"))
-            this.actor.system.modifiers.woundroll+=1
-
-        if (weapon.items.find(x => x.name.toUpperCase() == "INDIRECT FIRE")){
-            this.actor.system.modifiers.hitroll-=1
-            this.actor.system.modifiers.grants.cover=true
+        //apply .grants to targetData
+        for (const actorDataKey in actorData.modifiers.grants) {
+            targetData.modifiers[actorDataKey] = actorData.modifiers.grants[actorDataKey]
         }
-
         let completeAttackData = {
             models: controlled,
             targets: targeted,
-            weapon: weapon,
+            weapon: weaponData,
             details: [],
             stats: {
                 attacks: 0,
@@ -278,13 +287,21 @@ export class WarhammerActorSheet extends ActorSheet {
                 wounds: 0,
                 saves: 0,
                 damage: 0,
-            }
+            },
+            hazardous: {
+                destroyed: 0,
+                wounded: 0,
+            },
         }
-
         //par unit attack
         for (const model of controlled) {
-            this._handleRapidFire(weapon, model, targeted)
-            let roll = new Roll(weapon.system.attacks);
+            let bonusattacks = ""
+            if (weaponData.items.find(x => x.name.toUpperCase() == "RAPID FIRE"))
+                bonusattacks += "+" + this._handleRapidFire(weaponData, model, targeted)
+            if (weaponData.items.find(x => x.name.toUpperCase() == "BLAST"))
+                bonusattacks += "+" + Math.floor(targeted.size/5)
+
+            let roll = new Roll(weaponData.attacks + bonusattacks);
             await roll.evaluate({async: true});
 
             completeAttackData.stats.attacks += roll.total
@@ -298,101 +315,192 @@ export class WarhammerActorSheet extends ActorSheet {
                     wounds: 0,
                     saves: 0,
                     damage: 0,
-                }
+                },
+                hazardousHtml: null,
             }
             //do attack
             for (let j = 0; j < roll.total; j++) {
-                let results = await this._singleAttackRoll(model, weapon, targeted);
-                singleUnitAttackData.details.push(await Promise.all(results.map(async roll => {
-                    return roll.isDeterministic ? roll.total : await roll.render()
-                })));
-                if (results.length >= 2)
-                    singleUnitAttackData.stats.hits++
-                if (results.length >= 3)
-                    singleUnitAttackData.stats.wounds++
-                if (results.length >= 4) {
-                    singleUnitAttackData.stats.saves++
-                    singleUnitAttackData.stats.damage += results[results.length - 1].total
+                let results = await this._singleAttackRoll(model, duplicate(weaponData), duplicate(actorData), duplicate(targetData), targeted);
+                // singleUnitAttackData.details.push(await Promise.all(results.map(async roll => {
+                //     return roll.isDeterministic ? roll.total : await roll.render()
+                // })));
+
+                //update stats
+                singleUnitAttackData.stats.hits += results.hits
+                singleUnitAttackData.stats.wounds+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.wound), 0)
+                singleUnitAttackData.stats.saves+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.save), 0)
+                singleUnitAttackData.stats.damage+= results.rest.reduce((previousValue, currentValue) => previousValue + currentValue.damage?.total || 0, 0)
+
+                //render html
+                results.hitroll = results.hitroll.isDeterministic ? results.hitroll.total : await results.hitroll.render()
+                for (const restItem of results.rest) {
+                    restItem.wound = restItem.wound?.isDeterministic ? restItem.wound.total : await restItem.wound?.render()
+                    restItem.save = restItem.save?.isDeterministic ? restItem.save.total : await restItem.save?.render()
+                    restItem.damage = restItem.damage?.isDeterministic ? restItem.damage?.total : await restItem.damage?.render()
                 }
+                singleUnitAttackData.details.push(results)
             }
             completeAttackData.details.push(singleUnitAttackData)
             completeAttackData.stats.hits += singleUnitAttackData.stats.hits
             completeAttackData.stats.wounds += singleUnitAttackData.stats.wounds
             completeAttackData.stats.saves += singleUnitAttackData.stats.saves
             completeAttackData.stats.damage += singleUnitAttackData.stats.damage
-        }
 
+            if (weaponData.items.find(x => x.name.toUpperCase() == "HAZARDOUS")){
+                singleUnitAttackData.hazardousHtml = "Hazardous check:"
+                let roll = new Roll('1d6');
+                await roll.evaluate({async: true});
+                singleUnitAttackData.hazardousHtml += await roll.render()
+                if (roll.total === 1){
+                    if (actorData.tags.some( x => ["CHARACTER", "MONSTER", "VEHICLE"].includes(x.toUpperCase()))) {
+                        singleUnitAttackData.hazardousHtml += "take 3 mortal wounds"
+                        completeAttackData.hazardous.wounded+=1
+                    } else {
+                        singleUnitAttackData.hazardousHtml += "unit destroyed"
+                        completeAttackData.hazardous.destroyed+=1
+                    }
+                }
+            }
+
+        }
         this._toMessage(completeAttackData)
     }
 
-    async _singleAttackRoll(model, weapon, target) {
-        let results = []
+    async _singleAttackRoll(model, weaponData, actorData, targetData, targets) {
+        if (weaponData.items.find(x => x.name.toUpperCase() == "INDIRECT FIRE")
+            //check if we can target anyone normally (visible to given token)
+            && !targets.some((target) => model.los.contains(target.center.x, target.center.y) && getBaseToBaseDist(model, target) <= weaponData.range)){
+            actorData.modifiers.hitroll-=1
+            targetData.modifiers.cover=true
+        }
+        let result = {
+            hitroll: "",
+            hits: 0,
+            rest: []
+        }
 
         //hit
         let critHit = false
-        if (weapon.items.find(x => x.name.toUpperCase() == "TORRENT")){
-            results.push({render(){return "N/A"}})
+        if (weaponData.items.find(x => x.name.toUpperCase() == "TORRENT")){
+            result.hitroll = {render(){return "N/A"}}
         } else {
             let hitstr = `1d6`
-            console.log(model.actor.system.modifiers)
-            if (model.actor.system.modifiers.hitroll)
-                hitstr += "+" + Math.max(-1, Math.min(1, (await (new Roll("0+"+model.actor.system.modifiers.hitroll)).evaluate({async: true})).total))
+            if (weaponData.items.find(x => x.name.toUpperCase() == "HEAVY"))
+                actorData.modifiers.hitroll += 1
+            if (actorData.modifiers.hitroll)
+                hitstr += "+" + Math.max(-1, Math.min(1, actorData.modifiers.hitroll))
+
+
             let hroll = new Roll(hitstr);
             await hroll.evaluate({async: true});
-            results.push(hroll)
-            let hit = hroll.total >= weapon.system.skill
-            if (hroll.dice.find(x => x.values.includes(0)))
+            result.hitroll= hroll
+            let hit = hroll.total >= weaponData.skill
+            if (hroll.dice.find(x => x.values.includes(1)))
                 hit = false
             if (hroll.dice.find(x => x.values.includes(6))){
                 hit = true
                 critHit = true
             }
             if (!hit) {
-                return results
+                return result
             }
         }
-
-        //wound
-        if (critHit && weapon.items.find(x => x.name.toUpperCase() == "LETHAL HITS")){
-            results.push({render(){return "N/A"}})
-        } else {
-            let woundstr = `1d6`
-            if (model.actor.system.modifiers.woundroll)
-                woundstr += "+" + Math.max(-1, Math.min(1, (await (new Roll("0+"+model.actor.system.modifiers.woundroll)).evaluate({async: true})).total))
-            let successnum = this._woundMinRoll(weapon.system.strength, target.first().actor.system.stats.toughness)
-
-            let wroll = new Roll(woundstr);
-            await wroll.evaluate({async: true});
-            let wound = wroll.total >= successnum
-            if (!wound && weapon.items.find(x => x.name.toUpperCase() == "TWIN-LINKED")) {
-                let tmp = wroll.dice[0].reroll("r<5", false)
-                wroll = Roll.fromTerms(wroll.terms)
-                wound = wroll.total >= successnum
-            }
-            results.push(wroll)
-            if (wroll.dice.find(x => x.values.includes(0)))
-                wound = false
-            if (wroll.dice.find(x => x.values.includes(6)))
-                wound = true
-            if (!wound) {
-                return results
-            }
+        let numhits = 1
+        if (critHit && weaponData.items.find(x => x.name.toUpperCase() == "SUSTAINED HITS")){
+            numhits += parseInt(weaponData.items.find(x => x.name.toUpperCase() == "SUSTAINED HITS").system.value) || 0
         }
+        result.hits = numhits
+        for (let i = 0; i < numhits; i++) {
+            let subresult = {
+                // wound: "",
+                // save: "",
+                // damage: "",
+            }
+            result.rest.push(subresult)
 
-        //save
-        let sroll = new Roll(`1d6cs<${Math.max(2, Math.min(6, target.first().actor.system.stats.save - weapon.system.ap))}`);
-        await sroll.evaluate({async: true});
-        results.push(sroll)
-        let save = sroll.total
-        if (!save) {
-            return results
+            //wound
+            let critWound = false
+            if (critHit && weaponData.items.find(x => x.name.toUpperCase() == "LETHAL HITS")) {
+                subresult.wound = {
+                    render() {
+                        return "N/A"
+                    }
+                }
+            } else {
+                let woundstr = `1d6`
+                if (actorData.modifiers.woundroll)
+                    woundstr += "+" + Math.max(-1, Math.min(1, (await (new Roll("0+" + actorData.modifiers.woundroll)).evaluate({async: true})).total))
+                let successnum = this._woundMinRoll(weaponData.strength, targetData.stats.toughness)
+
+                let wroll = new Roll(woundstr);
+                await wroll.evaluate({async: true});
+                let wound = wroll.total >= successnum
+                if (!wound && weaponData.items.find(x => x.name.toUpperCase() == "TWIN-LINKED")) {
+                    let tmp = wroll.dice[0].reroll("r<5", false)
+                    wroll = Roll.fromTerms(wroll.terms)
+                    wound = wroll.total >= successnum
+                }
+                subresult.wound = wroll
+                if (wroll.dice.find(x => x.values.includes(1)))
+                    wound = false
+                if (wroll.dice.find(x => x.values.includes(6))) {
+                    wound = true
+                    critWound = true
+                }
+                if (weaponData.items.find(x => x.name.toUpperCase().startsWith("ANTI-"))) {
+                    let anti= weaponData.items.find(x => x.name.toUpperCase().startsWith("ANTI-"))
+                    let targettag = anti.name.split("-")[1]
+                    if (wroll.dice.find(x => x.values.some( y => y>=parseInt(anti.system.value)))
+                        && targetData.tags.map(x => x.toUpperCase()).includes(targettag.toUpperCase())){
+                        wound = true
+                        critWound = true
+                    }
+                }
+                if (!wound) {
+                    continue
+                }
+            }
+
+            //save
+            if (critWound && weaponData.items.find(x => x.name.toUpperCase() == "DEVASTATING WOUNDS")) {
+                subresult.save = {
+                    render() {
+                        return "N/A"
+                    }
+                }
+            } else {
+                let savemod = "+" + weaponData.ap
+
+                //cover
+                if (targetData.modifiers.cover &&
+                    !(targetData.stats.save >= 3 && weaponData.ap === 0))
+                    savemod += "+1"
+                let modifiedSavestat = targetData.stats.save - (await (new Roll(savemod)).evaluate({async: true})).total
+
+                let savetarget = targetData.stats.save
+                if (modifiedSavestat > targetData.invulnsave)
+                    savetarget = targetData.invulnsave
+
+                let sroll = new Roll(`1d6` + savemod);
+                await sroll.evaluate({async: true});
+                subresult.save = sroll
+                let save = sroll.total < savetarget
+                if (sroll.dice.find(x => x.values.includes(1)))
+                    save = true
+                if (!save) {
+                    continue
+                }
+            }
+
+            //damage
+            let bonusdamage = ""
+            if (weaponData.items.find(x => x.name.toUpperCase() == "MELTA"))
+                bonusdamage += "+" + this._handleMelta(weaponData, model, targets)
+            let droll = new Roll(weaponData.damage + bonusdamage);
+            await droll.evaluate({async: true});
+            subresult.damage = droll
         }
-
-        //damage
-        let droll = new Roll(weapon.system.damage);
-        await droll.evaluate({async: true});
-        results.push(droll)
-        return results
+        return result
     }
 
 //TODO relative changes to number fields, requires turning them into textfields
@@ -509,10 +617,21 @@ export class WarhammerActorSheet extends ActorSheet {
         if (!rapidfire || !rapidfire.system.value)
             return
         for (const target of targeted) {
-                if (getBaseToBaseDist(model, target) <= weapon.system.range/2){
-                    weapon.system.attacks += '+'+rapidfire.system.value
-                    return
+                if (getBaseToBaseDist(model, target) <= weapon.range/2){
+                    return rapidfire.system.value
                 }
             }
+        return 0
+    }
+    _handleMelta(weapon, model, targeted) {
+        let melta = weapon.items.find(x => x.name.toUpperCase() == "MELTA")
+        if (!melta || !melta.system.value)
+            return
+        for (const target of targeted) {
+            if (getBaseToBaseDist(model, target) <= weapon.range/2){
+                return melta.system.value
+            }
+        }
+        return 0
     }
 }

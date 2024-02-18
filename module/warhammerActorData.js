@@ -1,6 +1,6 @@
 class SplitStringField extends foundry.data.fields.StringField {
     initialize(value, model) {
-        return value.split(",");
+        return value.split(",").map(x => x.trim());
     }
 
 }
@@ -71,6 +71,12 @@ export class WarhammerActorData extends foundry.abstract.DataModel {
             }),
             tags: new SplitStringField(),
             faction: new fields.StringField(),
+            invulnsave: new fields.NumberField({
+                nullable: false,
+                required: true,
+                initial: 6,
+                integer: true
+            }),
             modifiers: new fields.SchemaField({
                 hitroll: new fields.NumberField({
                     required: true,
