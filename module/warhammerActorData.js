@@ -77,6 +77,11 @@ export class WarhammerActorData extends foundry.abstract.DataModel {
                 initial: 6,
                 integer: true
             }),
+            feelnopain: new fields.NumberField({
+                nullable: true,
+                required: true,
+                integer: true
+            }),
             modifiers: new fields.SchemaField({
                 hitroll: new fields.NumberField({
                     required: true,

@@ -13,6 +13,7 @@ import {WarhammerWeaponSheet} from "./items/warhammer-weapon-sheet.js";
 import {WarhammerWTagSheet} from "./items/warhammer-wtag-sheet.js";
 import {WarhammerRuler} from "./warhammerRuler.js";
 import {WarhammerToken} from "./token.js";
+import  "../libs/awesomplete/awesomplete.js"
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
 /* -------------------------------------------- */
@@ -147,3 +148,11 @@ function updateTokenRulerState(newState) {
     tokenRuler.active = newState;
     game.settings.set(SYSTEM_ID, "lastToggleState", newState);
 }
+
+Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
+    let input = html.find(".key input")[0]
+    console.log(Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s))
+    new Awesomplete(input, {
+        list: Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s)
+    });
+})

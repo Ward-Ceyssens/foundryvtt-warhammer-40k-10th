@@ -12,7 +12,7 @@ export class WarhammerActorSheet extends ActorSheet {
             template: `systems/${SYSTEM_ID}/templates/actor-sheet.html`,
             width: 600,
             height: 650,
-            // tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }]
+            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "weapons" }]
         });
     }
     /* -------------------------------------------- */
@@ -38,8 +38,19 @@ export class WarhammerActorSheet extends ActorSheet {
         // Prepare character data and items.
         if (context.actor.type == 'model') {
             this._prepareItems(context);
+
             // Prepare active effects
-            context.effects = this.actor.effects.contents
+            let effects = {
+                inactive: [],
+                temporary: [],
+                passive: [],
+            }
+            for (let e of this.actor.effects.contents) {
+                if (e.disabled) effects.inactive.push(e);
+                else if (e.isTemporary) effects.temporary.push(e);
+                else effects.passive.push(e);
+            }
+            context.effects = effects
         }
 
         // Add roll data for TinyMCE editors.
@@ -125,17 +136,18 @@ export class WarhammerActorSheet extends ActorSheet {
             item.delete();
             // li.slideUp(200, () => this.render(false));
         });
+
+        html.find('.effect-create').click(this._onEffectCreate.bind(this));
+        html.find('.effect-enable').click(ev => {
+            ActiveEffect.updateDocuments([{_id: ev.currentTarget.dataset.itemid, disabled: false}], {parent: this.actor})
+        });
+        html.find('.effect-disable').click(ev => {
+            ActiveEffect.updateDocuments([{_id: ev.currentTarget.dataset.itemid, disabled: true}], {parent: this.actor})
+        });
         html.find('.effect-delete').click(ev => {
             const item = this.actor.effects.get(ev.currentTarget.dataset.itemid);
             item.delete();
             // li.slideUp(200, () => this.render(false));
-        });
-        // let handler = ev => this._onDragStart(ev);
-        // Find all items on the character sheet.
-        html.find('tr.item').each((i, tr) => {
-            // Add draggable attribute and dragstart listener.
-            tr.setAttribute("draggable", true);
-            // tr.addEventListener("dragstart", handler, false);
         });
 
         super.activateListeners(html);
@@ -165,17 +177,31 @@ export class WarhammerActorSheet extends ActorSheet {
         // Remove the type from the dataset since it's in the itemData.type prop.
         delete itemData.system["type"];
 
-        // Finally, create the item!
-        if (type == "ActiveEffect")
-            return ActiveEffect.create({
-                label: name,
-                type: type,
-                system: system
-            }, {parent: this.actor});
-
         return Item.create(itemData, {parent: this.actor});
     }
+    async _onEffectCreate(event) {
+        event.preventDefault();
+        const header = event.currentTarget;
+        // Get the type of item to create.
+        const type = header.dataset.type;
+        // Grab any data associated with this control.
+        const system = duplicate(header.dataset);
+        // Initialize a default name.
+        const name = `New ${type.capitalize()} Effect`;
+        // Prepare the item object.
+        const itemData = {
+            label: name,
+            system: system
+        };
+        if (type === "temporary")
+            itemData.duration = {seconds: 60}
+        if (type === "inactive")
+            itemData.disabled = true
+        // Remove the type from the dataset since it's in the itemData.type prop.
+        delete itemData.system["type"];
 
+        return ActiveEffect.create(itemData, {parent: this.actor});
+    }
     //TODO recheck this later
     /**
      * Handle clickable rolls.
@@ -188,14 +214,12 @@ export class WarhammerActorSheet extends ActorSheet {
         const dataset = element.dataset;
         //TODO use safe clones instead of editing actual item
         const weapon = this.actor.items.get(dataset.documentId)
-        let weaponData = duplicate(weapon.system)
+        let weaponData = expandObject(flattenObject(weapon.system))
         weaponData.name = weapon.name
-        let actorData = duplicate(this.actor.system)
-        actorData.tags = duplicate(this.actor.system.tags) //because fuck js
+        let actorData = expandObject(flattenObject(this.actor.system))
 
+        weaponData.items = []
         for (let tagid of weapon.system.tags) {
-            if (!weaponData.items)
-                weaponData.items = []
             let tag = this.actor.items.get(tagid)
             weaponData.items.push(tag)
         }
@@ -259,8 +283,11 @@ export class WarhammerActorSheet extends ActorSheet {
     }
 
     async fullAttack(controlled, targeted, weaponData, actorData, modifiers) {
-        let targetData = duplicate(targeted.first().actor.system)
-        targetData.tags = duplicate(targeted.first().actor.system.tags)
+        console.log(targeted.first().actor.system.feelnopain)
+        let targetData = expandObject(flattenObject(targeted.first().actor.system))
+        console.log(targetData.feelnopain)
+        // targetData.tags = expandObject(flattenObject(targeted.first().actor.system.tags))
+        console.log(targetData)
         //apply changes from dialog
         actorData.modifiers.hitroll += modifiers.hitroll
         actorData.modifiers.woundroll += modifiers.woundroll
@@ -292,6 +319,8 @@ export class WarhammerActorSheet extends ActorSheet {
                 destroyed: 0,
                 wounded: 0,
             },
+            //for dice so nice
+            allRolls: []
         }
         //par unit attack
         for (const model of controlled) {
@@ -303,7 +332,8 @@ export class WarhammerActorSheet extends ActorSheet {
 
             let roll = new Roll(weaponData.attacks + bonusattacks);
             await roll.evaluate({async: true});
-
+            if (!roll.isDeterministic)
+                completeAttackData.allRolls.push(roll)
             completeAttackData.stats.attacks += roll.total
             let singleUnitAttackData = {
                 model: model,
@@ -320,12 +350,21 @@ export class WarhammerActorSheet extends ActorSheet {
             }
             //do attack
             for (let j = 0; j < roll.total; j++) {
-                let results = await this._singleAttackRoll(model, duplicate(weaponData), duplicate(actorData), duplicate(targetData), targeted);
+                let results = await this._singleAttackRoll(model, expandObject(flattenObject(weaponData)), expandObject(flattenObject(actorData)), expandObject(flattenObject(targetData)), targeted);
                 // singleUnitAttackData.details.push(await Promise.all(results.map(async roll => {
                 //     return roll.isDeterministic ? roll.total : await roll.render()
                 // })));
-
                 //update stats
+                if (!results.hitroll.isDeterministic)
+                    completeAttackData.allRolls.push(results.hitroll)
+                results.rest.map(x => {
+                    if (x.wound && !x.wound.isDeterministic)
+                        completeAttackData.allRolls.push(x.wound)
+                    if (x.save && !x.save.isDeterministic)
+                        completeAttackData.allRolls.push(x.save)
+                    if (x.damage && !x.damage.isDeterministic)
+                        completeAttackData.allRolls.push(x.damage)
+                })
                 singleUnitAttackData.stats.hits += results.hits
                 singleUnitAttackData.stats.wounds+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.wound), 0)
                 singleUnitAttackData.stats.saves+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.save), 0)
@@ -336,7 +375,7 @@ export class WarhammerActorSheet extends ActorSheet {
                 for (const restItem of results.rest) {
                     restItem.wound = restItem.wound?.isDeterministic ? restItem.wound.total : await restItem.wound?.render()
                     restItem.save = restItem.save?.isDeterministic ? restItem.save.total : await restItem.save?.render()
-                    restItem.damage = restItem.damage?.isDeterministic ? restItem.damage?.total : await restItem.damage?.render()
+                    restItem.damage = restItem.damage?.isDeterministic ? restItem.damage.total : await restItem.damage?.render()
                 }
                 singleUnitAttackData.details.push(results)
             }
@@ -382,7 +421,10 @@ export class WarhammerActorSheet extends ActorSheet {
         //hit
         let critHit = false
         if (weaponData.items.find(x => x.name.toUpperCase() == "TORRENT")){
-            result.hitroll = {render(){return "N/A"}}
+            result.hitroll = {
+                total: "N/A",
+                isDeterministic: true,
+            }
         } else {
             let hitstr = `1d6`
             if (weaponData.items.find(x => x.name.toUpperCase() == "HEAVY"))
@@ -422,9 +464,8 @@ export class WarhammerActorSheet extends ActorSheet {
             let critWound = false
             if (critHit && weaponData.items.find(x => x.name.toUpperCase() == "LETHAL HITS")) {
                 subresult.wound = {
-                    render() {
-                        return "N/A"
-                    }
+                    total: "N/A",
+                    isDeterministic: true,
                 }
             } else {
                 let woundstr = `1d6`
@@ -464,9 +505,8 @@ export class WarhammerActorSheet extends ActorSheet {
             //save
             if (critWound && weaponData.items.find(x => x.name.toUpperCase() == "DEVASTATING WOUNDS")) {
                 subresult.save = {
-                    render() {
-                        return "N/A"
-                    }
+                    total: "N/A",
+                    isDeterministic: true,
                 }
             } else {
                 let savemod = "+" + weaponData.ap
@@ -496,7 +536,11 @@ export class WarhammerActorSheet extends ActorSheet {
             let bonusdamage = ""
             if (weaponData.items.find(x => x.name.toUpperCase() == "MELTA"))
                 bonusdamage += "+" + this._handleMelta(weaponData, model, targets)
-            let droll = new Roll(weaponData.damage + bonusdamage);
+            let damageformula = weaponData.damage + bonusdamage
+            if (targetData.feelnopain){
+                damageformula = `(${damageformula})d6cf<${targetData.feelnopain}`
+            }
+            let droll = new Roll(damageformula);
             await droll.evaluate({async: true});
             subresult.damage = droll
         }
@@ -598,9 +642,9 @@ export class WarhammerActorSheet extends ActorSheet {
             content: html,
             user: game.user.id,
             type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-            sound: CONFIG.sounds.dice
+            sound: CONFIG.sounds.dice,
+            rolls: data.allRolls
         }, messageData);
-
         // Either create the message or just return the chat data
         const cls = getDocumentClass("ChatMessage");
         const msg = new cls(messageData);

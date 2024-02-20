@@ -12,7 +12,7 @@
     }
   ],
   "esmodules": ["module/warhammer.js"],
-  "styles": ["styles/simple.css"],
+  "styles": ["styles/simple.css", "libs/awesomplete/awesomplete.css"],
   "languages": [
     {
       "lang": "en",

@@ -11,8 +11,9 @@ export class WarhammerActor extends Actor {
      * Override getRollData() that's supplied to rolls.
      */
     getRollData() {
+        this.prepareDerivedData()
+        this.applyActiveEffects()
         const data = super.getRollData();
-
         // Prepare character roll data
 
         return data;

@@ -56,16 +56,17 @@
 
 
     </header>
-    <!--   <nav class="sheet-tabs tabs" data-group="primary">
+    <nav class="sheet-tabs tabs" data-group="primary">
        <a class="item" data-tab="weapons">weapons</a>
        <a class="item" data-tab="abilities">abilities</a>
-   </nav>
-   -->
+       <a class="item" data-tab="effects">effects</a>
+    </nav>
     {{!-- ...continued... --}}
 
     {{!-- Sheet Body --}}
     <section class="sheet-body">
         <div class="side-frill"></div>
+        <div class="tab weapons" data-group="primary" data-tab="weapons">
         <div>
             <div>
                 <div>
@@ -236,67 +237,142 @@
                         </tr>
                         {{/each}}
                     </table>
-                    <table class="item-table">
-                        <tr>
-                            <th  style="width: 28px">
-                                <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Toughness.svg" width="20" height="20"/>
-                            </th>
-                            <th colspan="2" class="item-name">
-                                <label style="text-transform: uppercase">abilities</label>
-                            </th>
-                            <th>
-                                <a class="item-control item-create" title="Add Ability" data-type="ability">
-                                    <i class="fas fa-plus"></i> Add Ability</a>
-                            </th>
-                        </tr>
-                        {{#each items.abil as | item |}}
-                        <tr class="item" data-document-id="{{item._id}}">
-                            <td>
-                            </td>
-                            <td colspan="2" class="item-name">
-                                <details>
-                                    <summary>
-                                        {{item.name}}
-                                    </summary>
-                                    {{editor item.system.description target="item.system.description" rollData=rollData button=true owner=owner editable=false}}
-                                </details>
-
-                            </td>
-                            <td>
-                                <a class="item-control item-edit" data-itemId="{{ item._id }}" title="Edit Item"><i class="fas fa-edit"></i></a>
-                                <a class="item-control item-delete" data-itemId="{{ item._id }}" title="Delete Item"><i class="fas fa-trash"></i></a>
-                            </td>
-
-                        </tr>
-                        {{/each}}
-                    </table>
-                    <table class="item-table">
-                        <tr>
-                            <th  style="width: 28px">
-                                <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Toughness.svg" width="20" height="20"/>
-                            </th>
-                            <th colspan="2" class="item-name">
-                                <label style="text-transform: uppercase">effects</label>
-                            </th>
-                            <th>
-                                <a class="item-control item-create" title="Add Effect" data-type="ActiveEffect">
-                                    <i class="fas fa-plus"></i> Add Effect</a>
-                            </th>
-                        </tr>
-                        {{#each effects as | effect |}}
-                            <tr class="item" data-document-id="{{effect._id}}">
-                                <td>
-                                </td>
-                                <td colspan="2" class="item-name">
-                                    {{effect.label}}
-                                </td>
-                                <td>
-                                    <a class="item-control effect-edit" data-itemId="{{ effect._id }}" title="Edit Effect"><i class="fas fa-edit"></i></a>
-                                    <a class="item-control effect-delete" data-itemId="{{ effect._id }}" title="Delete Effect"><i class="fas fa-trash"></i></a>
-                                </td>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="tab abilities" data-group="primary" data-tab="abilities">
+            <div>
+                <div>
+                    <div>
+                        <table class="item-table">
+                            <tr>
+                                <th  style="width: 28px">
+                                    <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Toughness.svg" width="20" height="20"/>
+                                </th>
+                                <th colspan="2" class="item-name">
+                                    <label style="text-transform: uppercase">abilities</label>
+                                </th>
+                                <th>
+                                    <a class="item-control item-create" title="Add Ability" data-type="ability">
+                                        <i class="fas fa-plus"></i> Add Ability</a>
+                                </th>
                             </tr>
-                        {{/each}}
-                    </table>
+                            {{#each items.abil as | item |}}
+                                <tr class="item" data-document-id="{{item._id}}">
+                                    <td>
+                                    </td>
+                                    <td colspan="2" class="item-name">
+                                        <details>
+                                            <summary>
+                                                {{item.name}}
+                                            </summary>
+                                            {{editor item.system.description target="item.system.description" rollData=rollData button=true owner=owner editable=false}}
+                                        </details>
+
+                                    </td>
+                                    <td>
+                                        <a class="item-control item-edit" data-itemId="{{ item._id }}" title="Edit Item"><i class="fas fa-edit"></i></a>
+                                        <a class="item-control item-delete" data-itemId="{{ item._id }}" title="Delete Item"><i class="fas fa-trash"></i></a>
+                                    </td>
+
+                                </tr>
+                            {{/each}}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab effects" data-group="primary" data-tab="effects">
+            <div>
+                <div>
+                    <div>
+                        <table class="item-table">
+                            <tr>
+                                <th  style="width: 28px">
+                                    <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Type.svg" width="20" height="20"/>
+                                </th>
+                                <th colspan="2" class="item-name">
+                                    <label style="text-transform: uppercase">temporary</label>
+                                </th>
+                                <th>
+                                    <a class="item-control effect-create" title="Add Effect" data-type="temporary">
+                                        <i class="fas fa-plus"></i> Add Effect</a>
+                                </th>
+                            </tr>
+                            {{#each effects.temporary as | effect |}}
+                                <tr class="item" data-document-id="{{effect._id}}">
+                                    <td>
+                                    </td>
+                                    <td colspan="2" class="item-name">
+                                        {{effect.label}}
+                                    </td>
+                                    <td>
+                                        <a class="item-control effect-disable" data-itemId="{{ effect._id }}" title="Disable Effect"><i class="fa-solid fa-x"></i></a>
+                                        <a class="item-control effect-edit" data-itemId="{{ effect._id }}" title="Edit Effect"><i class="fas fa-edit"></i></a>
+                                        <a class="item-control effect-delete" data-itemId="{{ effect._id }}" title="Delete Effect"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {{/each}}
+                        </table>
+                        <table class="item-table">
+                            <tr>
+                                <th  style="width: 28px">
+                                    <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Type.svg" width="20" height="20"/>
+                                </th>
+                                <th colspan="2" class="item-name">
+                                    <label style="text-transform: uppercase">passive</label>
+                                </th>
+                                <th>
+                                    <a class="item-control effect-create" title="Add Effect" data-type="passive">
+                                        <i class="fas fa-plus"></i> Add Effect</a>
+                                </th>
+                            </tr>
+                            {{#each effects.passive as | effect |}}
+                                <tr class="item" data-document-id="{{effect._id}}">
+                                    <td>
+                                    </td>
+                                    <td colspan="2" class="item-name">
+                                        {{effect.label}}
+                                    </td>
+                                    <td>
+                                        <a class="item-control effect-disable" data-itemId="{{ effect._id }}" title="Disable Effect"><i class="fa-solid fa-x"></i></a>
+                                        <a class="item-control effect-edit" data-itemId="{{ effect._id }}" title="Edit Effect"><i class="fas fa-edit"></i></a>
+                                        <a class="item-control effect-delete" data-itemId="{{ effect._id }}" title="Delete Effect"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {{/each}}
+                        </table>
+                        <table class="item-table">
+                            <tr>
+                                <th  style="width: 28px">
+                                    <img class="table-icon" style="height: 20px" src="systems/{{SYSTEM_ID}}/svg/Type.svg" width="20" height="20"/>
+                                </th>
+                                <th colspan="2" class="item-name">
+                                    <label style="text-transform: uppercase">inactive</label>
+                                </th>
+                                <th>
+                                    <a class="item-control effect-create" title="Add Effect" data-type="inactive">
+                                        <i class="fas fa-plus"></i> Add Effect</a>
+                                </th>
+                            </tr>
+                            {{#each effects.inactive as | effect |}}
+                                <tr class="item" data-document-id="{{effect._id}}">
+                                    <td>
+                                    </td>
+                                    <td colspan="2" class="item-name">
+                                        {{effect.label}}
+                                    </td>
+                                    <td>
+                                        <a class="item-control effect-enable" data-itemId="{{ effect._id }}" title="Enable Effect"><i class="fa-solid fa-check"></i></a>
+                                        <a class="item-control effect-edit" data-itemId="{{ effect._id }}" title="Edit Effect"><i class="fas fa-edit"></i></a>
+                                        <a class="item-control effect-delete" data-itemId="{{ effect._id }}" title="Delete Effect"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {{/each}}
+                        </table>
+
+                    </div>
                 </div>
             </div>
         </div>

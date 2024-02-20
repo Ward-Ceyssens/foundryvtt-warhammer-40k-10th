@@ -1,0 +1,3 @@
+[submodule "libs/awesomplete"]
+	path = libs/awesomplete
+	url = https://github.com/LeaVerou/awesomplete.git

@@ -10,7 +10,24 @@
 .warhammer.sheet.actor nav.sheet-tabs{
   /*border: 0;*/
   flex: unset;
+  background: darkgreen;
+  margin: unset;
+  border: 0;
 }
+
+.warhammer.sheet.actor .tabs .item.active, .warhammer.sheet.actor .tabs .item:hover{
+  background: #dfe0e2;
+  clip-path: polygon(100% 0,100% 0%,80% 100%,0 100%,0 100%,20% 0);
+  color: darkgreen;
+  text-shadow: unset;
+}
+.warhammer.sheet.actor .tabs .item{
+  width: 33%;
+  text-transform: uppercase;
+  color: white;
+  font-weight: bold;
+}
+
 .warhammer.sheet header.sheet-header{
   align-items: unset;
   flex: unset;
@@ -26,7 +43,7 @@
   height: 27px;
   border: unset;
   background: unset;
-  color: white;
+  color: #dfe0e2;
   text-transform: uppercase;
   font-size: 2rem;
   font-weight: 800;
@@ -36,7 +53,7 @@
 }
 .warhammer.sheet.actor .header-fields{
   position: relative;
-  color: white;
+  color: #dfe0e2;
   left: 5%;
 }
 .warhammer.sheet.actor .profile-img, .warhammer.sheet img {
@@ -126,7 +143,7 @@
 
 .warhammer.sheet.actor .side-frill {
   background-color: darkgreen;
-  height: calc(100% - 157px);
+  height: calc(100% - 189px);
   position: absolute;
   bottom: 0;
   width: 92px;
