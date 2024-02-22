@@ -83,26 +83,46 @@ export class WarhammerActorData extends foundry.abstract.DataModel {
                 integer: true
             }),
             modifiers: new fields.SchemaField({
-                hitroll: new fields.NumberField({
-                    required: true,
-                    nullable: true,
-                    integer: true,
+                hitroll: new fields.SchemaField({
+                    melee: new fields.NumberField({
+                        required: true,
+                        nullable: false,
+                        initial: 0,
+                        integer: true,
+                    }),
+                    ranged: new fields.NumberField({
+                        required: true,
+                        nullable: false,
+                        initial: 0,
+                        integer: true,
+                    }),
                 }),
                 woundroll: new fields.NumberField({
                     required: true,
-                    nullable: true,
+                    nullable: false,
+                    initial: 0,
                     integer: true,
                 }),
                 cover: new fields.BooleanField({}),
                 grants: new fields.SchemaField({
-                    hitroll: new fields.NumberField({
-                        required: true,
-                        nullable: true,
-                        integer: true,
+                    hitroll: new fields.SchemaField({
+                        melee: new fields.NumberField({
+                            required: true,
+                            nullable: false,
+                            initial: 0,
+                            integer: true,
+                        }),
+                        ranged: new fields.NumberField({
+                            required: true,
+                            nullable: false,
+                            initial: 0,
+                            integer: true,
+                        }),
                     }),
                     woundroll: new fields.NumberField({
                         required: true,
-                        nullable: true,
+                        nullable: false,
+                        initial: 0,
                         integer: true,
                     }),
                     cover: new fields.BooleanField({})

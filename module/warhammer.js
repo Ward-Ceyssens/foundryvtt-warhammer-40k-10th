@@ -150,9 +150,10 @@ function updateTokenRulerState(newState) {
 }
 
 Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
-    let input = html.find(".key input")[0]
-    console.log(Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s))
-    new Awesomplete(input, {
-        list: Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s)
-    });
+    let inputs = html.find(".key input")
+    $.map( inputs, input => {
+        new Awesomplete(input, {
+            list: Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s)
+        });
+    })
 })

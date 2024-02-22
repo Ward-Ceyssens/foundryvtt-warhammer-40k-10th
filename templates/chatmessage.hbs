@@ -63,6 +63,20 @@
                     Dmg
                 </th>
             </tr>
+            <tr style="text-align: center">
+                <th>
+                    {{model.targets.hit}}+
+                </th>
+                <th>
+                    {{model.targets.wound}}+
+                </th>
+                <th>
+                    {{model.targets.save}}-
+                </th>
+                <th>
+                    {{model.targets.damage}}-
+                </th>
+            </tr>
             </thead>
             <tbody>
             {{#each model.details as | attack |}}

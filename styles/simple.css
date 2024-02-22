@@ -233,3 +233,7 @@
 .attack-dialog .row{
   display: flex;
 }
+
+div.awesomplete {
+  display: unset;
+}
