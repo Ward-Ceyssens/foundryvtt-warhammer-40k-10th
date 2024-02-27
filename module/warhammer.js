@@ -1,11 +1,11 @@
 // Import Modules
 import {WarhammerItem} from "./items/item.js";
-import {WarhammerActor} from "./actor.js";
-import {WarhammerActorSheet} from "./actor-sheet.js";
-import {getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
+import {WarhammerActor} from "./actors/actor.js";
+import {WarhammerModelSheet} from "./actors/actor-sheet.js";
+import {FACTIONS, getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
 import {preloadHandlebarsTemplates} from "./templates.js";
 // import {WarhammerTokenDocument} from "./token.js";
-import {WarhammerActorData} from "./warhammerActorData.js";
+import {WarhammerModelData} from "./actors/warhammerModelData.js";
 import {WeaponData} from "./items/weaponData.js";
 import {WeaponTagData} from "./items/weaponTagData.js";
 import {WarhammerAbilitySheet} from "./items/warhammer-ability-sheet.js";
@@ -14,6 +14,8 @@ import {WarhammerWTagSheet} from "./items/warhammer-wtag-sheet.js";
 import {WarhammerRuler} from "./warhammerRuler.js";
 import {WarhammerToken} from "./token.js";
 import  "../libs/awesomplete/awesomplete.js"
+import {WarhammerObjectiveData} from "./actors/warhammerObjectiveData.js";
+import {WarhammerObjectiveSheet} from "./actors/objective-sheet.js";
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
 /* -------------------------------------------- */
@@ -33,7 +35,8 @@ Hooks.once('init', function() {
     CONFIG.WARHAMMER = {};
 
     //define data models
-    CONFIG.Actor.systemDataModels.model = WarhammerActorData;
+    CONFIG.Actor.systemDataModels.model = WarhammerModelData;
+    CONFIG.Actor.systemDataModels.objective = WarhammerObjectiveData;
     CONFIG.Item.systemDataModels.weapon = WeaponData;
     CONFIG.Item.systemDataModels.wtag = WeaponTagData;
 
@@ -44,7 +47,8 @@ Hooks.once('init', function() {
 
     // Register sheet application classes
     Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet(SYSTEM_ID, WarhammerActorSheet, { makeDefault: true });
+    Actors.registerSheet(SYSTEM_ID, WarhammerModelSheet, { types: ["model"], makeDefault: true });
+    Actors.registerSheet(SYSTEM_ID, WarhammerObjectiveSheet, { types: ["objective"], makeDefault: true });
     Items.unregisterSheet("core", ItemSheet);
     Items.registerSheet(SYSTEM_ID, WarhammerAbilitySheet, { types: ["ability"], makeDefault: true });
     Items.registerSheet(SYSTEM_ID, WarhammerWeaponSheet, { types: ["weapon"], makeDefault: true });
@@ -70,6 +74,7 @@ Hooks.once('init', function() {
     };
     CONFIG.Canvas.rulerClass = WarhammerRuler;
     CONFIG.Token.objectClass = WarhammerToken;
+
     return preloadHandlebarsTemplates();
 });
 
@@ -156,4 +161,9 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
             list: Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s)
         });
     })
+})
+
+Hooks.on("sightRefresh", ()=> {
+    let objectives = canvas.tokens.placeables.filter(x => x.actor.type === "objective")
+    objectives.map(x => x.actor.updateObjective(x))
 })

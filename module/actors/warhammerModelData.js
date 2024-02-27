@@ -4,7 +4,7 @@ class SplitStringField extends foundry.data.fields.StringField {
     }
 
 }
-export class WarhammerActorData extends foundry.abstract.DataModel {
+export class WarhammerModelData extends foundry.abstract.DataModel {
     static defineSchema() {
         const fields = foundry.data.fields;
         return {

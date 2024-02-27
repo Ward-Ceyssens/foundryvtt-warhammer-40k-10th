@@ -379,7 +379,14 @@
         <div class="bottom">
                 <div class="faction">
                     <label for="faction">faction:</label>
-                    <input id="faction" type="text" name="system.faction" value="{{system.faction}}" data-dtype="text"/>
+<!--                    <input id="faction" type="text" name="system.faction" value="{{system.faction}}" data-dtype="text"/>-->
+                    <select id="faction" name="system.faction">
+                        {{#select system.faction}}
+                            {{#each FACTIONS as |color name|}}
+                                <option value="{{ name }}">{{ name }}</option>
+                            {{/each}}
+                        {{/select}}
+                    </select>
                 </div>
                 <div class="tags">
                     <label for="tags">keywords:</label>

@@ -10,7 +10,7 @@
 .warhammer.sheet.actor nav.sheet-tabs{
   /*border: 0;*/
   flex: unset;
-  background: darkgreen;
+  background: var(--faction-color);
   margin: unset;
   border: 0;
 }
@@ -18,7 +18,7 @@
 .warhammer.sheet.actor .tabs .item.active, .warhammer.sheet.actor .tabs .item:hover{
   background: #dfe0e2;
   clip-path: polygon(100% 0,100% 0%,80% 100%,0 100%,0 100%,20% 0);
-  color: darkgreen;
+  color: var(--faction-color);
   text-shadow: unset;
 }
 .warhammer.sheet.actor .tabs .item{
@@ -78,13 +78,13 @@
 .warhammer.sheet.actor .value {
   display: flex;
   align-items: center;
-  background: darkgreen;
+  background: var(--faction-color);
   position: relative;
   width: 44px;
   height: 44px;
-  color: darkgreen;
+  color: var(--faction-color);
   clip-path: polygon(100% 0,100% 75%,75% 100%,0 100%,0 25%,25% 0);
-  border: darkgreen;
+  border: var(--faction-color);
 }
 
 .warhammer.sheet.actor .value > input, .warhammer.sheet.actor .val-and-max > input{
@@ -96,9 +96,9 @@
   left: 2px;
   width: 40px;
   height: 40px;
-  color: darkgreen;
+  color: var(--faction-color);
   clip-path: polygon(100% 0,100% 75%,75% 100%,0 100%,0 25%,25% 0);
-  border: darkgreen;
+  border: var(--faction-color);
 }
 
 .warhammer.sheet.actor .val-and-max > input{
@@ -107,13 +107,13 @@
 .warhammer.sheet.actor .val-and-max-container {
   display: flex;
   align-items: center;
-  background: darkgreen;
+  background: var(--faction-color);
   position: relative;
   width: 88px;
   height: 44px;
-  color: darkgreen;
+  color: var(--faction-color);
   clip-path: polygon(100% 0,100% 75%,87% 100%,0 100%,0 25%,12% 0);
-  border: darkgreen;
+  border: var(--faction-color);
 }
 
 .warhammer.sheet.actor .val-and-max-container > .val-and-max {
@@ -125,13 +125,13 @@
   left: 2px;
   width: 84px;
   height: 40px;
-  color: darkgreen;
+  color: var(--faction-color);
   clip-path: polygon(100% 0,100% 75%,87% 100%,0 100%,0 25%,12% 0);
-  border: darkgreen;
+  border: var(--faction-color);
 }
 
 .warhammer.sheet.actor header.sheet-header:before {
-  background-color: darkgreen;
+  background-color: var(--faction-color);
   content: "";
   height: 90px;
   left: 5%;
@@ -142,7 +142,7 @@
 }
 
 .warhammer.sheet.actor .side-frill {
-  background-color: darkgreen;
+  background-color: var(--faction-color);
   height: calc(100% - 189px);
   position: absolute;
   bottom: 0;
@@ -170,13 +170,13 @@
   filter: invert(87%) sepia(100%) saturate(0) hue-rotate(303deg) brightness(104%) contrast(101%);
 }
 .warhammer.sheet.actor .item-table > tbody > tr > th, .warhammer.sheet.item .item-table > tbody > tr > th {
-  background: darkgreen;
+  background: var(--faction-color);
   color: #dfe0e2;
 }
 
 .warhammer.sheet.actor .bottom {
   position: absolute;
-  border: darkgreen 2px solid;
+  border: var(--faction-color) 2px solid;
   bottom: 0;
   display: inline-flex;
   align-items: center;
@@ -185,7 +185,7 @@
 }
 
 .warhammer.sheet.actor .faction, .warhammer.sheet.actor .tags {
-  border: darkgreen 2px solid;
+  border: var(--faction-color) 2px solid;
   display: contents;
 }
 
@@ -206,7 +206,7 @@
   width: 92px;
   position: absolute;
   bottom: 30px;
-  border: darkgreen 2px solid;
+  border: var(--faction-color) 2px solid;
   border-bottom: 0;
   background: #dfe0e2;
 }

@@ -1,10 +1,10 @@
-import {getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
+import {FACTIONS, getBaseToBaseDist, mmToInch, SYSTEM_ID} from "../constants.js";
 
 /**
  * Extend the basic ActorSheet with some very simple modifications
  * @extends {ActorSheet}
  */
-export class WarhammerActorSheet extends ActorSheet {
+export class WarhammerModelSheet extends ActorSheet {
     /** @inheritdoc */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -24,7 +24,7 @@ export class WarhammerActorSheet extends ActorSheet {
         // editable, the items array, and the effects array.
         const context = super.getData();
         context.SYSTEM_ID = SYSTEM_ID
-
+        context.FACTIONS = FACTIONS
         // Use a safe clone of the actor data for further operations.
         const actorData = context.actor.system;
 
@@ -110,7 +110,7 @@ export class WarhammerActorSheet extends ActorSheet {
 
     /** @override */
     activateListeners(html) {
-
+        html[0].style.setProperty(`--faction-color`, FACTIONS[this.actor.system.faction]);
 
         // Render the item sheet for viewing/editing prior to the editable check.
         html.find('.item-edit').click(ev => {
@@ -212,7 +212,7 @@ export class WarhammerActorSheet extends ActorSheet {
         event.preventDefault();
         const element = event.currentTarget;
         const dataset = element.dataset;
-        //TODO use safe clones instead of editing actual item
+        //TODO find a less stupid way to clone: deepClone(doesn't clone) and duplicate(doesn't copy modified values) don't work
         const weapon = this.actor.items.get(dataset.documentId)
         let weaponData = expandObject(flattenObject(weapon.system))
         weaponData.name = weapon.name
@@ -225,7 +225,6 @@ export class WarhammerActorSheet extends ActorSheet {
         }
 
         const targeted = game.user.targets;
-        console.log(weapon)
         let controlled = weapon._inRange(canvas.tokens.controlled, targeted, weapon.system.range);
 
         //selected and targeted must make sense

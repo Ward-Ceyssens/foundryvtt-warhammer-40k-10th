@@ -1,8 +1,9 @@
 {
 "Actor": {
-  "types": ["model"],
+  "types": ["model", "objective"],
   "htmlFields": ["biography"],
-  "model": {}
+  "model": {},
+  "objective": {}
 },
   "Item": {
     "types": ["ability", "weapon", "wtag"],
