@@ -16,6 +16,6 @@
             <label for="optional">Optional?</label>
             <input id="optional" type="checkbox" name="system.optional" {{checked item.system.optional}} data-dtype="Boolean">
         </div>
-            {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
+            {{editor item.system.description target="system.description" button=true editable=editable engine="prosemirror"}}
     </section>
 </form>

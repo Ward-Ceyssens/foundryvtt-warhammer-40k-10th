@@ -1,4 +1,4 @@
-import {SYSTEM_ID} from "../constants.js";
+import {FACTIONS, SYSTEM_ID} from "../constants.js";
 
 export class WarhammerWeaponSheet extends ItemSheet {
     /** @inheritdoc */
@@ -7,6 +7,7 @@ export class WarhammerWeaponSheet extends ItemSheet {
             classes: ["warhammer", "sheet", "item"],
             width: 520,
             height: 480,
+            dragDrop: [{ dragSelector: '.item-name', dropSelector: '.sheet-body' }],
         });
     }
 
@@ -43,6 +44,7 @@ export class WarhammerWeaponSheet extends ItemSheet {
     /* -------------------------------------------- */
     /** @inheritdoc */
     activateListeners(html) {
+        html[0].style.setProperty(`--faction-color`, FACTIONS[this.actor.system.faction]);
         // Render the item sheet for viewing/editing prior to the editable check.
         html.find('.item-edit').click(ev => {
             const item = this.actor.items.get(ev.currentTarget.dataset.itemid);
@@ -103,6 +105,7 @@ export class WarhammerWeaponSheet extends ItemSheet {
         }
         await Item.updateDocuments([update], {parent: this.actor});
     }
+
 
 }
 

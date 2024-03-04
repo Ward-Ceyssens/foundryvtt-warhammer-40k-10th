@@ -13,10 +13,10 @@ export class WeaponTagData extends foundry.abstract.DataModel {
                 required: true,
                 initial: false
             }),
-            weapon: new fields.StringField({
-                required: true,
-                blank: false,
-            })
+            // weapon: new fields.StringField({
+            //     required: true,
+            //     blank: false,
+            // })
         }
     }
 }

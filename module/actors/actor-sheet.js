@@ -12,7 +12,9 @@ export class WarhammerModelSheet extends ActorSheet {
             template: `systems/${SYSTEM_ID}/templates/actor-sheet.html`,
             width: 600,
             height: 650,
-            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "weapons" }]
+            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "weapons" }],
+            dragDrop: [{ dragSelector: 'tr.item', dropSelector: '.sheet-body' }],
+
         });
     }
     /* -------------------------------------------- */
@@ -92,7 +94,7 @@ export class WarhammerModelSheet extends ActorSheet {
                         if (x.system.value)
                             str += " "+x.system.value
                         return str
-                    } ).join(",") + ']';
+                    } ).join(", ") + ']';
 
                 if (i.system.range == 0)
                     weapons.melee.push(i)
@@ -283,15 +285,53 @@ export class WarhammerModelSheet extends ActorSheet {
     }
 
 
-//TODO relative changes to number fields, requires turning them into textfields
 
-    // _onNumberChange(event){
-    //     const input = event.target;
-    //     const value = input.value;
-    //     if ( ["+", "-"].includes(value[0]) ) {
-    //         console.log("DELTA")
-    //         const delta = parseFloat(value);
-    //         input.value = Number(foundry.utils.getProperty(this.actor, input.name)) + delta;
-    //     }
+    async _onDrop(event) {
+        console.log('onDrop', {
+            event,
+        });
+        // console.log(event.dataTransfer)
+        // console.log(event.dataTransfer.getData("text/plain"))
+        if (!event.dataTransfer.getData("text/plain"))
+            return
+        let data = await fromUuid(JSON.parse(event.dataTransfer.getData("text/plain")).uuid)
+        let target = event.target.closest(".item")?.dataset.documentId
+        if (!target)
+            return
+
+        target = this.actor.items.get(target)
+
+        if (data.type !== 'wtag' || target.type !== 'weapon')
+            return
+
+        const itemData = {
+            name: data.name,
+            type: data.type,
+            system: data.system
+        };
+
+        let newTag = await Item.create(itemData, {parent: this.actor});
+        let newTagList = target.system.tags
+        newTagList.push(newTag._id)
+        console.log(newTagList)
+        await target.update({
+            "system.tags": newTagList
+        })
+        // this.actor.updateEmbeddedDocuments('Item', [{
+        //     _id: target._id,
+        //     tags: newTagList
+        // }], {render:true})
+        this.render(true)
+    }
+    // _onDragStart(event) {
+    //     console.log( 'onDrag', {
+    //         event,
+    //     });
+    //     console.log(event.currentTarget)
+    //     event.dataTransfer.setData("text/plain", JSON.stringify({id: event.currentTarget.dataset.documentId}));
+    //     // super._onDragStart(event)
+    //     console.log(event.dataTransfer.items)
+    //
+    //     // ...
     // }
 }

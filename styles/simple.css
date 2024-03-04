@@ -2,6 +2,7 @@
   /* Sheet Tabs */
   /* Items List */
   /* Attributes */
+  --faction-color: darkgreen
 }
 .warhammer.sheet .window-content{
   background: #dfe0e2;
@@ -34,6 +35,9 @@
 }
 .warhammer.sheet .editor{
   min-height: 50px;
+}
+.warhammer.sheet .editor.prosemirror{
+  height: 250px;
 }
 .warhammer.sheet details .editor{
   min-height: unset;
