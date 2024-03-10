@@ -33,9 +33,8 @@ export class WarhammerWeaponSheet extends ItemSheet {
         // Initialize containers.
         let tags = []
         // Iterate through items, allocating to containers
-        for (let i of context.item.actor.items) {
-            if (i.type === 'wtag' && i.system.weapon == this.item._id)
-                tags.push(i)
+        for (let tagid of this.item.system.tags) {
+            tags.push(this.actor.items.get(tagid))
         }
         // Assign and return
         context.items = tags;
@@ -67,12 +66,10 @@ export class WarhammerWeaponSheet extends ItemSheet {
     async _onItemDelete(event) {
         const item = this.actor.items.get(event.currentTarget.dataset.itemid);
         let newtaglist = this.item.system.tags
-        console.log(newtaglist)
         const index = newtaglist.indexOf(event.currentTarget.dataset.itemid);
         if (index > -1) { // only splice array when item is found
             newtaglist.splice(index, 1); // 2nd parameter means remove one item only
         }
-        console.log(newtaglist)
         let update = {_id: this.item._id,
             "system.tags": newtaglist,
         }

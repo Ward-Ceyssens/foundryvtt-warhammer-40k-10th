@@ -19,7 +19,11 @@ export class WarhammerActor extends Actor {
 
         if (this.name != item.name)
             return false;
-        return  JSON.stringify(this.system) === JSON.stringify(item.system)
+        let thisSystem = expandObject(flattenObject(this.system))
+        let itemSystem = expandObject(flattenObject(item.system))
+        delete thisSystem.stats.wounds.value
+        delete itemSystem.stats.wounds.value
+        return  JSON.stringify(thisSystem) === JSON.stringify(itemSystem)
     }
 
     generateCapturePercentages(){

@@ -70,7 +70,9 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                 integer: true
             }),
             tags: new SplitStringField(),
-            faction: new fields.StringField(),
+            faction: new fields.StringField({
+                initial: "NECRONS"
+            }),
             invulnsave: new fields.NumberField({
                 nullable: false,
                 required: true,

@@ -2,7 +2,7 @@
 import {WarhammerItem} from "./items/item.js";
 import {WarhammerActor} from "./actors/actor.js";
 import {WarhammerModelSheet} from "./actors/actor-sheet.js";
-import {FACTIONS, getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
+import {getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
 import {preloadHandlebarsTemplates} from "./templates.js";
 // import {WarhammerTokenDocument} from "./token.js";
 import {WarhammerModelData} from "./actors/warhammerModelData.js";
@@ -13,7 +13,7 @@ import {WarhammerWeaponSheet} from "./items/warhammer-weapon-sheet.js";
 import {WarhammerWTagSheet} from "./items/warhammer-wtag-sheet.js";
 import {WarhammerRuler} from "./warhammerRuler.js";
 import {WarhammerToken} from "./token.js";
-import  "../libs/awesomplete/awesomplete.js"
+import "../libs/awesomplete/awesomplete.js"
 import {WarhammerObjectiveData} from "./actors/warhammerObjectiveData.js";
 import {WarhammerObjectiveSheet} from "./actors/objective-sheet.js";
 /* -------------------------------------------- */
@@ -88,7 +88,14 @@ Hooks.on('preUpdateActor', function (actor, change, options, userid) {
             change.prototypeToken.width =  mmToInch(change.system.baseSize)
         }
 })
-
+Hooks.on('preCreateActor', function (actor, data, options, userid) {
+    actor.updateSource({
+        prototypeToken: {
+            height: mmToInch(actor.system.baseSize),
+            width: mmToInch(actor.system.baseSize),
+        }
+    })
+})
 //stolen from https://gitlab.com/tposney/midi-qol/-/blob/v11/src/module/chatMessageHandling.ts
 Hooks.on('renderChatMessage', function (message, html, messageData) {
     let _highlighted= null;
@@ -166,4 +173,28 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
 Hooks.on("sightRefresh", ()=> {
     let objectives = canvas.tokens.placeables.filter(x => x.actor.type === "objective")
     objectives.map(x => x.actor.updateObjective(x))
+})
+
+
+Hooks.once("dragRuler.ready", (SpeedProvider) => {
+    class WarhammerSpeedProvider extends SpeedProvider {
+        get colors() {
+            return [
+                {id: "move", default: 0x00FF00, name: "NORMAL MOVE"},
+            ]
+        }
+
+        getRanges(token) {
+            if (token.actor.type === "objective")
+                return []
+
+            const baseSpeed = token.actor.system.stats.move
+
+            return [
+                {range: baseSpeed, color: "move"},
+            ]
+        }
+    }
+
+    dragRuler.registerSystem(SYSTEM_ID, WarhammerSpeedProvider)
 })

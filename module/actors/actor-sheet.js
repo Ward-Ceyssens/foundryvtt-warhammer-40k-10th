@@ -287,21 +287,24 @@ export class WarhammerModelSheet extends ActorSheet {
 
 
     async _onDrop(event) {
-        console.log('onDrop', {
-            event,
-        });
-        // console.log(event.dataTransfer)
-        // console.log(event.dataTransfer.getData("text/plain"))
         if (!event.dataTransfer.getData("text/plain"))
             return
+        console.log(event.dataTransfer.getData("text/plain"))
         let data = await fromUuid(JSON.parse(event.dataTransfer.getData("text/plain")).uuid)
+
+        //allow normal drop for anything else
+        if (data.type !== 'wtag'){
+            super._onDrop(event)
+            return
+        }
+
         let target = event.target.closest(".item")?.dataset.documentId
         if (!target)
             return
 
         target = this.actor.items.get(target)
 
-        if (data.type !== 'wtag' || target.type !== 'weapon')
+        if (target.type !== 'weapon')
             return
 
         const itemData = {
@@ -313,25 +316,18 @@ export class WarhammerModelSheet extends ActorSheet {
         let newTag = await Item.create(itemData, {parent: this.actor});
         let newTagList = target.system.tags
         newTagList.push(newTag._id)
-        console.log(newTagList)
         await target.update({
             "system.tags": newTagList
         })
-        // this.actor.updateEmbeddedDocuments('Item', [{
-        //     _id: target._id,
-        //     tags: newTagList
-        // }], {render:true})
         this.render(true)
     }
-    // _onDragStart(event) {
-    //     console.log( 'onDrag', {
-    //         event,
-    //     });
-    //     console.log(event.currentTarget)
-    //     event.dataTransfer.setData("text/plain", JSON.stringify({id: event.currentTarget.dataset.documentId}));
-    //     // super._onDragStart(event)
-    //     console.log(event.dataTransfer.items)
-    //
-    //     // ...
-    // }
+
+    _onDragStart(event){
+        event.dataTransfer.setData("text/plain", JSON.stringify(
+            {
+                type: 'Item',
+                uuid: this.actor.items.get(event.target.closest(".item")?.dataset.documentId).uuid,
+            }
+        ))
+    }
 }

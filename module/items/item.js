@@ -90,7 +90,12 @@ export class WarhammerItem extends Item {
                 hits: 0,
                 wounds: 0,
                 saves: 0,
-                damage: 0,
+                damage: {
+                    total: 0,
+                    actual: 0,
+                    lost: 0,
+                },
+                modelsDestroyed: 0,
             },
             hazardous: {
                 destroyed: 0,
@@ -99,6 +104,12 @@ export class WarhammerItem extends Item {
             //for dice so nice
             allRolls: []
         }
+
+        let leastHPTarget = targeted.reduce((previousTarget, currentTarget) =>
+                previousTarget.actor.system.stats.wounds.value < currentTarget.actor.system.stats.wounds.value ? previousTarget : currentTarget,
+            targeted.first())
+        let targetHp = leastHPTarget.actor.system.stats.wounds.value
+
         //par unit attack
         for (const model of controlled) {
             let bonusattacks = ""
@@ -121,7 +132,11 @@ export class WarhammerItem extends Item {
                     hits: 0,
                     wounds: 0,
                     saves: 0,
-                    damage: 0,
+                    damage: {
+                        total: 0,
+                        actual: 0,
+                        lost: 0,
+                    },
                 },
                 targets: {
                     hit: weaponData.skill,
@@ -134,9 +149,7 @@ export class WarhammerItem extends Item {
             //do attack
             for (let j = 0; j < roll.total; j++) {
                 let results = await this._singleAttackRoll(model, expandObject(flattenObject(weaponData)), expandObject(flattenObject(actorData)), expandObject(flattenObject(targetData)), targeted);
-                // singleUnitAttackData.details.push(await Promise.all(results.map(async roll => {
-                //     return roll.isDeterministic ? roll.total : await roll.render()
-                // })));
+
                 //update stats
                 if (!results.hitroll.isDeterministic)
                     completeAttackData.allRolls.push(results.hitroll)
@@ -151,7 +164,20 @@ export class WarhammerItem extends Item {
                 singleUnitAttackData.stats.hits += results.hits
                 singleUnitAttackData.stats.wounds+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.wound), 0)
                 singleUnitAttackData.stats.saves+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.save), 0)
-                singleUnitAttackData.stats.damage+= results.rest.reduce((previousValue, currentValue) => previousValue + currentValue.damage?.total || 0, 0)
+
+                for (const rest of results.rest) {
+                    let damage = rest.damage?.total || 0
+                    singleUnitAttackData.stats.damage = {
+                        total: singleUnitAttackData.stats.damage.total + damage,
+                        actual: singleUnitAttackData.stats.damage.actual + Math.min(damage, targetHp),
+                        lost: singleUnitAttackData.stats.damage.lost + (damage - Math.min(damage, targetHp)),
+                    }
+                    targetHp-=damage
+                    if (targetHp <= 0){
+                        targetHp = leastHPTarget.actor.system.stats.wounds.max
+                        completeAttackData.stats.modelsDestroyed++
+                    }
+                }
 
                 //render html
                 results.hitroll = results.hitroll.isDeterministic ? results.hitroll.total : await results.hitroll.render()
@@ -166,7 +192,9 @@ export class WarhammerItem extends Item {
             completeAttackData.stats.hits += singleUnitAttackData.stats.hits
             completeAttackData.stats.wounds += singleUnitAttackData.stats.wounds
             completeAttackData.stats.saves += singleUnitAttackData.stats.saves
-            completeAttackData.stats.damage += singleUnitAttackData.stats.damage
+            for (const damageKey in singleUnitAttackData.stats.damage) {
+                completeAttackData.stats.damage[damageKey] += singleUnitAttackData.stats.damage[damageKey]
+            }
 
             if (weaponData.items.find(x => x.name.toUpperCase() == "HAZARDOUS")){
                 singleUnitAttackData.hazardousHtml = "Hazardous check:"
@@ -232,6 +260,7 @@ export class WarhammerItem extends Item {
                 critHit = true
             }
             if (!hit) {
+                result.rest.push({})
                 return result
             }
         }
@@ -304,7 +333,7 @@ export class WarhammerItem extends Item {
                 subresult.save = sroll
                 let save = sroll.total < savetarget
                 if (sroll.dice.find(x => x.values.includes(1)))
-                    save = true
+                    save = false
                 if (!save) {
                     continue
                 }
@@ -331,12 +360,14 @@ export class WarhammerItem extends Item {
         //cover
         if (targetData.modifiers.cover &&
             !(targetData.stats.save >= 3 && weaponData.ap === 0))
-            savemod += "+1"
+            savemod += "+1[cover]"
         let modifiedSavestat = targetData.stats.save - (await (new Roll(savemod)).evaluate({async: true})).total
 
         let savetarget = targetData.stats.save
-        if (modifiedSavestat > targetData.invulnsave)
+        if (modifiedSavestat > targetData.invulnsave){
             savetarget = targetData.invulnsave
+            savemod = "-0[invuln]"
+        }
         return {savemod, savetarget};
     }
 
@@ -364,14 +395,22 @@ export class WarhammerItem extends Item {
         })
         //get all attackers that directly touch the attackers from firstpass
         //because they touch themselves this includes every attacker from firstpass too
-        let secondPass = controlled.filter( token => {
+        let baseToBase = controlled.filter( token => {
             for (const target of firstPass) {
                 if (getBaseToBaseDist(token, target) <= game.settings.get(SYSTEM_ID, "melee_generosity"))
                     return true
             }
             return false
         })
-        return secondPass;
+
+        let engagement = controlled.filter( token => {
+            for (const target of targeted) {
+                if (getBaseToBaseDist(token, target) <= 1)
+                    return true
+            }
+            return false
+        })
+        return [...new Set([...engagement,...baseToBase])];
     }
 
     _woundMinRoll(strength, toughness){

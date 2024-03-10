@@ -25,7 +25,8 @@
         H:{{stats.hits}}
         W:{{stats.wounds}}
         !S:{{stats.saves}}
-        D:{{stats.damage}}
+        D:{{stats.damage.actual}} ({{stats.damage.total}}-{{stats.damage.lost}})
+        <div>{{stats.modelsDestroyed}} models destroyed</div>
         <div>
             {{#if hazardous.destroyed }}
                 Hazardous: {{hazardous.destroyed}} units destroyed
@@ -44,7 +45,7 @@
             H:{{model.stats.hits}}
             W:{{model.stats.wounds}}
             !S:{{model.stats.saves}}
-            D:{{model.stats.damage}}
+            <div>Damage:{{model.stats.damage.actual}} ({{model.stats.damage.total}} total, {{model.stats.damage.lost}} lost to overkill)</div>
             <div>{{{model.hazardousHtml}}}</div>
         </summary>
         <table>
@@ -71,10 +72,12 @@
                     {{model.targets.wound}}+
                 </th>
                 <th>
-                    {{model.targets.save}}-
+                    <{{model.targets.save}}
                 </th>
                 <th>
-                    {{model.targets.damage}}-
+                    {{#if model.targets.damage}}
+                        {{model.targets.damage}}-
+                    {{/if}}
                 </th>
             </tr>
             </thead>
