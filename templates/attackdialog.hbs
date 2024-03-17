@@ -1,4 +1,52 @@
 <div class="attack-dialog">
+    <div class="unit-summary">
+        <details class="units">
+            <summary>
+            {{#each models as | model |}}
+                <div>
+                    {{model.num}}x {{model.name}}
+                </div>
+            {{/each}}
+            </summary>
+            <div class="dropped">
+                <hr>
+                {{#if dropped.attackers.range}}
+                    <div>
+                        out of range:
+                    </div>
+                    {{#each dropped.attackers.range as | model |}}
+                        <div>
+                            {{model.num}}x {{model.name}}
+                        </div>
+                    {{/each}}
+                {{/if}}
+                {{#if dropped.attackers.weapon}}
+                    <div>
+                        lacks {{weapon.name}}:
+                    </div>
+                    {{#each dropped.attackers.weapon as | model |}}
+                        <div>
+                            {{model.num}}x {{model.name}}
+                        </div>
+                    {{/each}}
+                {{/if}}
+                <hr>
+            </div>
+        </details>
+        <div>attack</div>
+        <div class="targets">
+            {{#each targets as | target |}}
+                <div>
+                    {{target.num}}x {{target.name}}
+                </div>
+            {{/each}}
+        </div>
+        <div>with</div>
+        <div class="weapon">
+            {{weapon.name}}
+            <span class="weapon-tag">{{weapon.tagstring}}</span>
+        </div>
+    </div>
     <div class="row">
         <div class="col">
             <label for="hitroll">hit roll bonus</label>

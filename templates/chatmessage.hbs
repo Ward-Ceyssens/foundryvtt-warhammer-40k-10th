@@ -17,6 +17,7 @@
     <div>with</div>
     <div class="weapon">
          {{weapon.name}}
+        <span class="weapon-tag">{{weapon.tagstring}}</span>
     </div>
 </div>
 <details class="battle-summary">
@@ -26,13 +27,17 @@
         W:{{stats.wounds}}
         !S:{{stats.saves}}
         D:{{stats.damage.actual}} ({{stats.damage.total}}-{{stats.damage.lost}})
-        <div>{{stats.modelsDestroyed}} models destroyed</div>
+        <div>{{stats.modelsDestroyed}} models destroyed
+            {{#if stats.finalModelHP.show}}
+                , one model at {{stats.finalModelHP.value}}/{{stats.finalModelHP.max}}
+            {{/if}}
+        </div>
         <div>
             {{#if hazardous.destroyed }}
-                Hazardous: {{hazardous.destroyed}} units destroyed
+                Hazardous: {{hazardous.destroyed}} models destroyed
             {{/if}}
             {{#if hazardous.wounded }}
-                Hazardous: {{hazardous.wounded}} units wounded
+                Hazardous: {{hazardous.wounded}} models wounded
             {{/if}}
         </div>
     </summary>

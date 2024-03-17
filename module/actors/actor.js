@@ -17,15 +17,29 @@ export class WarhammerActor extends Actor {
         if (this.type != item?.type)
             return false;
 
-        if (this.name != item.name)
-            return false;
+        // if (this.name != item.name)
+        //     return false;
         let thisSystem = expandObject(flattenObject(this.system))
         let itemSystem = expandObject(flattenObject(item.system))
         delete thisSystem.stats.wounds.value
         delete itemSystem.stats.wounds.value
         return  JSON.stringify(thisSystem) === JSON.stringify(itemSystem)
     }
-
+    static reduceToCount(list){
+        let modelsTmp = list.reduce((acc, val) => {
+            val = val.actor.name
+            acc[val] = acc[val] === undefined ? 1 : acc[val] += 1;
+            return acc;
+        }, {});
+        let models = []
+        for (const model in modelsTmp) {
+            models.push({
+                name: model,
+                num: modelsTmp[model],
+            })
+        }
+        return models
+    }
     generateCapturePercentages(){
         //group and total OC by faction
         let capture = this.system.tokens.map(id => canvas.tokens.get(id)).reduce((map, token) => {

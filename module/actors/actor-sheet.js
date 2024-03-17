@@ -1,4 +1,5 @@
 import {FACTIONS, getBaseToBaseDist, mmToInch, SYSTEM_ID} from "../constants.js";
+import {WarhammerActor} from "./actor.js";
 
 /**
  * Extend the basic ActorSheet with some very simple modifications
@@ -80,7 +81,7 @@ export class WarhammerModelSheet extends ActorSheet {
         let abil= []
 
         // Iterate through items, allocating to containers
-        for (let i of context.items) {
+        for (let i of context.actor.items) {
             if (i.type === 'weapon') {
                 for (let tagid of i.system.tags) {
                     if (!i.items)
@@ -89,12 +90,7 @@ export class WarhammerModelSheet extends ActorSheet {
                     i.items.push(tag)
                 }
                 if (i.items)
-                    i.tagstring = '[' + i.items.map(x => {
-                        let str = x.name
-                        if (x.system.value)
-                            str += " "+x.system.value
-                        return str
-                    } ).join(", ") + ']';
+                    i.tagstring = i.getTagstring();
 
                 if (i.system.range == 0)
                     weapons.melee.push(i)
@@ -212,6 +208,10 @@ export class WarhammerModelSheet extends ActorSheet {
      */
     async _onRoll(event) {
         event.preventDefault();
+        if (canvas.tokens.controlled.length == 0) {
+            ui.notifications.error("Aborting Attack: No tokens selected");
+            return
+        }
         const element = event.currentTarget;
         const dataset = element.dataset;
         //TODO find a less stupid way to clone: deepClone(doesn't clone) and duplicate(doesn't copy modified values) don't work
@@ -225,10 +225,11 @@ export class WarhammerModelSheet extends ActorSheet {
             let tag = this.actor.items.get(tagid)
             weaponData.items.push(tag)
         }
+        weaponData.tagstring = weapon.getTagstring()
 
         const targeted = game.user.targets;
         let controlled = weapon._inRange(canvas.tokens.controlled, targeted, weapon.system.range);
-
+        let outOfRange = canvas.tokens.controlled.filter(x => !controlled.includes(x));
         //selected and targeted must make sense
         if (targeted.length == 0) {
             ui.notifications.error("Aborting Attack: No targets selected");
@@ -240,31 +241,41 @@ export class WarhammerModelSheet extends ActorSheet {
                 return
             }
         }
-
-        if (canvas.tokens.controlled.length == 0) {
-            ui.notifications.error("Aborting Attack: No tokens selected");
-            return
-        }
         if (controlled.length == 0) {
             ui.notifications.error("Aborting Attack: No tokens in range to attack target");
             return
         }
 
         //collect attackers
-        controlled = controlled.filter( token => {
+        let tmp = controlled.filter( token => {
             for (const item of token.actor.items) {
                 if (item.equals(weapon))
                     return true
             }
         })
+        let noWeapon = controlled.filter(x => !tmp.includes(x));
+        controlled = tmp
 
         if (controlled.length == 0) {
             ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among attackers`);
             return
         }
+
         let d = new Dialog({
             title: "Test Dialog",
-            content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({actor:this, weapon:weaponData, target:targeted.first()}),
+            content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
+                actor:this,
+                weapon:weaponData,
+                target:targeted.first(),
+                models: WarhammerActor.reduceToCount(controlled),
+                targets: WarhammerActor.reduceToCount(targeted),
+                dropped:{
+                    attackers: {
+                        range:WarhammerActor.reduceToCount(outOfRange),
+                        weapon: WarhammerActor.reduceToCount(noWeapon),
+                    }
+                }
+            }),
             buttons: {
                 one: {
                     icon: '<i class="fas fa-check"></i>',

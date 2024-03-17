@@ -1,4 +1,5 @@
 import {getBaseToBaseDist, SYSTEM_ID} from "../constants.js";
+import {WarhammerActor} from "../actors/actor.js";
 
 /**
  * Extend the basic Item with some very simple modifications.
@@ -54,7 +55,25 @@ export class WarhammerItem extends Item {
         return this.system.value == item.system.value
     }
 
+    getTagstring(){
+        let tagstring = ""
+        if (this.type !== "weapon")
+            return tagstring
+        let tags = []
+        for (let tagid of this.system.tags) {
+            let tag = this.actor.items.get(tagid)
+            tags.push(tag)
+        }
 
+        if (tags.length !== 0)
+            tagstring = '[' + tags.map(x => {
+                let str = x.name
+                if (x.system.value)
+                    str += " "+x.system.value
+                return str
+            } ).join(", ") + ']';
+        return tagstring
+    }
     async fullAttack(controlled, targeted, weaponData, actorData, modifiers) {
         let targetData = expandObject(flattenObject(targeted.first().actor.system))
         //apply changes from dialog
@@ -96,6 +115,12 @@ export class WarhammerItem extends Item {
                     lost: 0,
                 },
                 modelsDestroyed: 0,
+                finalModelHP: {
+                    value: 0,
+                    max: targetData.stats.wounds.max,
+                    show: false,
+                },
+
             },
             hazardous: {
                 destroyed: 0,
@@ -213,6 +238,8 @@ export class WarhammerItem extends Item {
             }
 
         }
+        completeAttackData.stats.finalModelHP.value = targetHp
+        completeAttackData.stats.finalModelHP.show = targetHp !== completeAttackData.stats.finalModelHP.max
         this._battleToMessage(completeAttackData)
     }
 
@@ -220,7 +247,9 @@ export class WarhammerItem extends Item {
         let isMelee = weaponData.range === 0
         if (weaponData.items.find(x => x.name.toUpperCase() == "INDIRECT FIRE")
             //check if we can target anyone normally (visible to given token)
-            && !targets.some((target) => model.los.contains(target.center.x, target.center.y) && getBaseToBaseDist(model, target) <= weaponData.range)){
+            && (x.system.optional || //if set as optional then this tag is turned on intentionally for this attack, meaning we apply the effects regardless of LOS
+                //if not set as optional then check LOS to see if this should apply
+                !targets.some((target) => model.los.contains(target.center.x, target.center.y) && getBaseToBaseDist(model, target) <= weaponData.range))){
             actorData.modifiers.hitroll.ranged-=1
             actorData.modifiers.hitroll.melee-=1
             targetData.modifiers.cover=true
@@ -266,7 +295,7 @@ export class WarhammerItem extends Item {
         }
         let numhits = 1
         if (critHit && weaponData.items.find(x => x.name.toUpperCase() == "SUSTAINED HITS")){
-            numhits += parseInt(weaponData.items.find(x => x.name.toUpperCase() == "SUSTAINED HITS").system.value) || 0
+            numhits += (await (new Roll(weaponData.items.find(x => x.name.toUpperCase() == "SUSTAINED HITS").system.value)).evaluate())
         }
         result.hits = numhits
         for (let i = 0; i < numhits; i++) {
@@ -331,10 +360,10 @@ export class WarhammerItem extends Item {
                 let sroll = new Roll(`1d6` + savemod);
                 await sroll.evaluate({async: true});
                 subresult.save = sroll
-                let save = sroll.total < savetarget
+                let notsave = sroll.total < savetarget
                 if (sroll.dice.find(x => x.values.includes(1)))
-                    save = false
-                if (!save) {
+                    notsave = true
+                if (!notsave) {
                     continue
                 }
             }
@@ -372,7 +401,7 @@ export class WarhammerItem extends Item {
     }
 
     _inRange(controlled, targeted, range) {
-        if (range == 0){
+        if (range === 0){
             return this._inMeleeRange(controlled, targeted)
         }
         return controlled.filter( token => {
@@ -427,32 +456,8 @@ export class WarhammerItem extends Item {
 
     async _battleToMessage(data, messageData={}, {rollMode, create=true}={}) {
 
-        let attackers = data.models.reduce((acc, val) => {
-            val = val.actor.name
-            acc[val] = acc[val] === undefined ? 1 : acc[val] += 1;
-            return acc;
-        }, {});
-        let targets = data.targets.reduce((acc, val) => {
-            val = val.actor.name
-            acc[val] = acc[val] === undefined ? 1 : acc[val] += 1;
-            return acc;
-        }, {});
-
-        data.models = []
-
-        for (const attacker in attackers) {
-            data.models.push({
-                name: attacker,
-                num: attackers[attacker],
-            })
-        }
-        data.targets = []
-        for (const target in targets) {
-            data.targets.push({
-                name: target,
-                num: targets[target],
-            })
-        }
+        data.models = WarhammerActor.reduceToCount(data.models)
+        data.targets = WarhammerActor.reduceToCount(data.targets)
 
         let html = Handlebars.partials[`systems/${SYSTEM_ID}/templates/chatmessage.hbs`](data)
 

@@ -44,8 +44,10 @@ Hooks.once('init', function() {
     CONFIG.Actor.documentClass = WarhammerActor;
     CONFIG.Item.documentClass = WarhammerItem;
     // CONFIG.Token.documentClass = WarhammerTokenDocument;
-
-    // Register sheet application classes
+    CONFIG.Combat.initiative = {
+        formula: '1d6',
+        decimals: 2,
+    };    // Register sheet application classes
     Actors.unregisterSheet("core", ActorSheet);
     Actors.registerSheet(SYSTEM_ID, WarhammerModelSheet, { types: ["model"], makeDefault: true });
     Actors.registerSheet(SYSTEM_ID, WarhammerObjectiveSheet, { types: ["objective"], makeDefault: true });
