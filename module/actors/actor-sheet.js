@@ -81,7 +81,7 @@ export class WarhammerModelSheet extends ActorSheet {
         let abil= []
 
         // Iterate through items, allocating to containers
-        for (let i of context.actor.items) {
+        for (let i of context.items) {
             if (i.type === 'weapon') {
                 for (let tagid of i.system.tags) {
                     if (!i.items)
@@ -90,7 +90,7 @@ export class WarhammerModelSheet extends ActorSheet {
                     i.items.push(tag)
                 }
                 if (i.items)
-                    i.tagstring = i.getTagstring();
+                    i.tagstring = this.actor.items.get(i._id).getTagstring();
 
                 if (i.system.range == 0)
                     weapons.melee.push(i)
@@ -109,6 +109,8 @@ export class WarhammerModelSheet extends ActorSheet {
     /** @override */
     activateListeners(html) {
         html[0].style.setProperty(`--faction-color`, FACTIONS[this.actor.system.faction]);
+        if (this.actor.system.invulnsave)
+            html[0].style.setProperty(`--header-height`, "170px");
 
         // Render the item sheet for viewing/editing prior to the editable check.
         html.find('.item-edit').click(ev => {
@@ -300,7 +302,6 @@ export class WarhammerModelSheet extends ActorSheet {
     async _onDrop(event) {
         if (!event.dataTransfer.getData("text/plain"))
             return
-        console.log(event.dataTransfer.getData("text/plain"))
         let data = await fromUuid(JSON.parse(event.dataTransfer.getData("text/plain")).uuid)
 
         //allow normal drop for anything else
@@ -334,11 +335,24 @@ export class WarhammerModelSheet extends ActorSheet {
     }
 
     _onDragStart(event){
-        event.dataTransfer.setData("text/plain", JSON.stringify(
-            {
+        let type = event.target.closest(".item")?.dataset.type
+        let data
+        switch (type) {
+
+            case "Item":
+            data = {
                 type: 'Item',
                 uuid: this.actor.items.get(event.target.closest(".item")?.dataset.documentId).uuid,
             }
-        ))
+            break
+
+            case "ActiveEffect":
+            data = {
+                type: 'ActiveEffect',
+                uuid: this.actor.effects.get(event.target.closest(".item")?.dataset.documentId).uuid,
+            }
+
+        }
+        event.dataTransfer.setData("text/plain", JSON.stringify(data))
     }
 }

@@ -2,7 +2,8 @@
   /* Sheet Tabs */
   /* Items List */
   /* Attributes */
-  --faction-color: darkgreen
+  --faction-color: darkgreen;
+  --header-height: 150px;
 }
 .warhammer.sheet .window-content{
   background: #dfe0e2;
@@ -18,7 +19,7 @@
 
 .warhammer.sheet.actor nav{
   position: sticky;
-  top: 150px;
+  top: var(--header-height);
   z-index: 999;
 }
 
@@ -40,7 +41,7 @@
   align-items: unset;
   flex: unset;
   z-index: 1;
-  height: 150px;
+  height: var(--header-height);
 }
 .warhammer.sheet .editor{
   min-height: 50px;
@@ -73,7 +74,7 @@
   border: unset;
   position: relative;
   height: unset;
-  max-height: 150px;
+  max-height: var(--header-height);
 }
 .warhammer.sheet.actor .profile-img{
   position: absolute;
@@ -168,7 +169,7 @@
   bottom: 0;
   right: 0;
   width: 92px;
-  clip-path: polygon(0 0,0 100%,100% 100%,100% calc(100% - 80px),5px calc(100% - 150px),5px 0);
+  clip-path: polygon(0 0,0 100%,100% 100%,100% calc(100% - 80px),5px calc(100% - var(--header-height)),5px 0);
   transform: scaleX(-1);
 }
 
@@ -232,6 +233,20 @@
   border: var(--faction-color) 2px solid;
   border-bottom: 0;
   background: #dfe0e2;
+}
+.warhammer.sheet.actor .invuln{
+  position: absolute;
+  margin-top: 5px;
+}
+.warhammer.sheet.actor .invuln label{
+  position: fixed;
+  background: var(--faction-color);
+  border-color: var(--faction-color);
+  margin-left: -29px;
+  border-left: 60px solid var(--faction-color);
+  border-right: 10px solid var(--faction-color);
+  margin-top: 10px;
+  text-transform: uppercase;
 }
 .weapon-tag{
   background: white;

@@ -1,8 +1,89 @@
+import {WeaponData} from "../items/weaponData.js";
+
 class SplitStringField extends foundry.data.fields.StringField {
     initialize(value, model) {
         return value.split(",").map(x => x.trim());
     }
 
+}
+
+class WeaponModifiers extends WeaponData {
+    static defineSchema() {
+        const fields = foundry.data.fields;
+        let schema = super.defineSchema()
+        for (const schemaKey in schema) {
+            schema[schemaKey].required = false
+            schema[schemaKey].nullable = true
+            schema[schemaKey].initial = undefined
+        }
+        delete schema.tags
+        delete schema.description
+        return schema
+    }
+
+}
+
+class WarhammerModifiersField extends foundry.data.fields.SchemaField {
+
+    constructor(object) {
+        if (!object)
+            object = {}
+        const fields = foundry.data.fields;
+        super(foundry.utils.mergeObject({
+            hitroll: new fields.SchemaField({
+                melee: new fields.SchemaField({
+                        bonus: new fields.NumberField({
+                            required: false,
+                            nullable: true,
+                            integer: true,
+                        }),
+                        reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false}),
+                        crit: new fields.NumberField({
+                            required: false,
+                            nullable: true,
+                            integer: true,
+                        }),
+                    }),
+                ranged: new fields.SchemaField({
+                    bonus: new fields.NumberField({
+                        required: false,
+                        nullable: true,
+                        integer: true,
+                    }),
+                    reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false}),
+                    crit: new fields.NumberField({
+                        required: false,
+                        nullable: true,
+                        integer: true,
+                    }),
+                }),
+            }),
+            woundroll: new fields.SchemaField({
+                bonus: new fields.NumberField({
+                    required: false,
+                    nullable: true,
+                    integer: true,
+                }),
+                reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:true}),
+                crit: new fields.NumberField({
+                    required: false,
+                    nullable: true,
+                    integer: true,
+                }),
+            }),
+            cover: new fields.BooleanField({
+                required: false,
+                nullable: true,
+                // initial: null
+            }),
+            weapon: new fields.SchemaField(WeaponModifiers.defineSchema(),{
+                    required: false,
+                    nullable: true,
+                    // initial: null
+                })
+        },
+            object));
+    }
 }
 export class WarhammerModelData extends foundry.abstract.DataModel {
     static defineSchema() {
@@ -74,9 +155,9 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                 initial: "NECRONS"
             }),
             invulnsave: new fields.NumberField({
-                nullable: false,
+                nullable: true,
                 required: true,
-                initial: 6,
+                initial: null,
                 integer: true
             }),
             feelnopain: new fields.NumberField({
@@ -84,51 +165,8 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                 required: true,
                 integer: true
             }),
-            modifiers: new fields.SchemaField({
-                hitroll: new fields.SchemaField({
-                    melee: new fields.NumberField({
-                        required: true,
-                        nullable: false,
-                        initial: 0,
-                        integer: true,
-                    }),
-                    ranged: new fields.NumberField({
-                        required: true,
-                        nullable: false,
-                        initial: 0,
-                        integer: true,
-                    }),
-                }),
-                woundroll: new fields.NumberField({
-                    required: true,
-                    nullable: false,
-                    initial: 0,
-                    integer: true,
-                }),
-                cover: new fields.BooleanField({}),
-                grants: new fields.SchemaField({
-                    hitroll: new fields.SchemaField({
-                        melee: new fields.NumberField({
-                            required: true,
-                            nullable: false,
-                            initial: 0,
-                            integer: true,
-                        }),
-                        ranged: new fields.NumberField({
-                            required: true,
-                            nullable: false,
-                            initial: 0,
-                            integer: true,
-                        }),
-                    }),
-                    woundroll: new fields.NumberField({
-                        required: true,
-                        nullable: false,
-                        initial: 0,
-                        integer: true,
-                    }),
-                    cover: new fields.BooleanField({})
-                }),
+            modifiers: new WarhammerModifiersField({
+                grants: new WarhammerModifiersField(),
             }),
         };
     }

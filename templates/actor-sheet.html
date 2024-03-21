@@ -26,6 +26,14 @@
                     <div class="value">
                         <input id="save" type="text" name="system.stats.save" value="{{system.stats.save}}" data-dtype="Number" />
                     </div>
+                    {{#if system.invulnsave}}
+                        <div class="invuln">
+                            <label for="invuln">invulnerable save</label>
+                            <div class="value">
+                                <input id="invuln" type="text" value="{{system.invulnsave}}" data-dtype="Number" readonly/>
+                            </div>
+                        </div>
+                    {{/if}}
                 </div>
                 <div class="col">
                     <label for="wounds">W</label>
@@ -52,7 +60,7 @@
                 {{!-- {{editor enriched.biography target="system.biography" button=true engine="prosemirror" collaborate=false}} --}}
             </div>
         </div>
-        <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="150"/>
+        <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
 
 
     </header>
@@ -102,7 +110,7 @@
                             </th>
                         </tr>
                         {{#each items.weapons.ranged as | item |}}
-                        <tr class="item" data-document-id="{{item._id}}">
+                        <tr class="item" data-document-id="{{item._id}}" data-type="Item">
                             <td>
                             </td>
                             <td colspan="2" class="item-name">
@@ -186,7 +194,7 @@
                             </th>
                         </tr>
                         {{#each items.weapons.melee as | item |}}
-                        <tr class="item" data-document-id="{{item._id}}">
+                        <tr class="item" data-document-id="{{item._id}}" data-type="Item">
                             <td>
                             </td>
                             <td colspan="2" class="item-name">
@@ -259,7 +267,7 @@
                                 </th>
                             </tr>
                             {{#each items.abil as | item |}}
-                                <tr class="item" data-document-id="{{item._id}}">
+                                <tr class="item" data-document-id="{{item._id}}" data-type="Item">
                                     <td>
                                     </td>
                                     <td colspan="2" class="item-name">
@@ -301,7 +309,7 @@
                                 </th>
                             </tr>
                             {{#each effects.temporary as | effect |}}
-                                <tr class="item" data-document-id="{{effect._id}}">
+                                <tr class="item" data-document-id="{{effect._id}}" data-type="ActiveEffect">
                                     <td>
                                     </td>
                                     <td colspan="2" class="item-name">
@@ -329,7 +337,7 @@
                                 </th>
                             </tr>
                             {{#each effects.passive as | effect |}}
-                                <tr class="item" data-document-id="{{effect._id}}">
+                                <tr class="item" data-document-id="{{effect._id}}" data-type="ActiveEffect">
                                     <td>
                                     </td>
                                     <td colspan="2" class="item-name">
@@ -357,7 +365,7 @@
                                 </th>
                             </tr>
                             {{#each effects.inactive as | effect |}}
-                                <tr class="item" data-document-id="{{effect._id}}">
+                                <tr class="item" data-document-id="{{effect._id}}"  data-type="ActiveEffect">
                                     <td>
                                     </td>
                                     <td colspan="2" class="item-name">
