@@ -24,25 +24,30 @@ export class WarhammerToken extends Token {
             this.border.lineStyle(4, 0x000000, 0.8).drawCircle(this.w/2,this.w/2, this.w/2);
             this.border.lineStyle(2, this._getBorderColor() || 0xFF9829, 1.0).drawCircle(this.w/2,this.w/2, this.w/2);
         }
-        if (this.actor.type === "objective" && canvas.initialized){
+        if (canvas.initialized && this.actor?.type === "objective"){
             let cap = this.actor.generateCapturePercentages()
             let total = cap.reduce((acc, val) => acc+val[1], 0)
             cap.map(val => val[1] /= total)
             cap = cap.sort((a,b) => a[0] > b[0] ? -1 : 1)
 
-            //return early
-            if (cap.length === 0)
-                return r
-            let x = this.w/2
-            let y = this.w/2
-            let radius = this.w/2
+            let x = this.w / 2
+            let y = this.w / 2
+            let radius = this.w / 2
 
-            this.border.clear()
-            this.border.beginFill("0x"+FACTIONS[cap[0][0]].slice(1)).arc(x,y,radius, 0.5*Math.PI - Math.PI*2*cap[0][1], 0.5*Math.PI)
-                .arc(x,y,0, 0.5*Math.PI - Math.PI*2*cap[0][1], 0.5*Math.PI).endFill();
-            if (cap[1])
-                this.border.beginFill("0x"+FACTIONS[cap[1][0]].slice(1)).arc(x,y,radius,  0.5*Math.PI, 0.5*Math.PI+Math.PI*2*cap[1][1])
-                    .arc(x,y,0,  0.5*Math.PI, 0.5*Math.PI+Math.PI*2*cap[1][1]).endFill();
+            //return early
+            if (cap.length !== 0) {
+                this.border.clear()
+                this.border.beginFill("0x" + FACTIONS[cap[0][0]].slice(1)).arc(x, y, radius, 0.5 * Math.PI - Math.PI * 2 * cap[0][1], 0.5 * Math.PI)
+                    .arc(x, y, 0, 0.5 * Math.PI - Math.PI * 2 * cap[0][1], 0.5 * Math.PI).endFill();
+                if (cap[1]) {
+                    this.border.beginFill("0x" + FACTIONS[cap[1][0]].slice(1)).arc(x, y, radius, 0.5 * Math.PI, 0.5 * Math.PI + Math.PI * 2 * cap[1][1])
+                        .arc(x, y, 0, 0.5 * Math.PI, 0.5 * Math.PI + Math.PI * 2 * cap[1][1]).endFill();
+                }
+            }
+            if (this.controlled || this.hover){
+                this.border.lineStyle(4, 0x000000, 0.8).drawCircle(x,y,radius+300);
+                this.border.lineStyle(2, this._getBorderColor() || 0xFF9829, 1.0).drawCircle(x,y,radius+300);
+            }
         }
         return r
     }

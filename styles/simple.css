@@ -45,6 +45,7 @@
 }
 .warhammer.sheet .editor{
   min-height: 50px;
+  white-space: pre-wrap;
 }
 .warhammer.sheet .editor.prosemirror{
   height: 250px;

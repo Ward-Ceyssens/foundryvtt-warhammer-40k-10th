@@ -16,6 +16,7 @@ import {WarhammerToken} from "./token.js";
 import "../libs/awesomplete/awesomplete.js"
 import {WarhammerObjectiveData} from "./actors/warhammerObjectiveData.js";
 import {WarhammerObjectiveSheet} from "./actors/objective-sheet.js";
+import {RosterImporter} from "./importer.js";
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
 /* -------------------------------------------- */
@@ -172,8 +173,9 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
     })
 })
 
+//TODO: make this hook onto the end of any token move instead
 Hooks.on("sightRefresh", ()=> {
-    let objectives = canvas.tokens.placeables.filter(x => x.actor.type === "objective")
+    let objectives = canvas.tokens.placeables.filter(x => x.actor?.type === "objective")
     objectives.map(x => x.actor.updateObjective(x))
 })
 
@@ -200,3 +202,36 @@ Hooks.once("dragRuler.ready", (SpeedProvider) => {
 
     dragRuler.registerSystem(SYSTEM_ID, WarhammerSpeedProvider)
 })
+
+Hooks.on('renderActorDirectory', (app, html, data) => {
+    html.find('div.action-buttons').append("<button class='import-roster'><i class=\"fas fa-file-import\"></i>import roster</button>");
+    let d = new Dialog({
+        title: "Roster Import",
+        content: "<form autocomplete=\"off\" onsubmit=\"event.preventDefault();\">\n" +
+            "    <p class=\"notes\">You may import a roster in the .ros format</p>\n" +
+            "    <div class=\"form-group\">\n" +
+            "        <label for=\"data\">Roster File</label>\n" +
+            "        <input type=\"file\" name=\"data\" accept='.ros'/>\n" +
+            "    </div>\n",
+        buttons: {
+            import: {
+                icon: "<i class=\"fas fa-file-import\"></i>",
+                label: "Import",
+                cssClass: "import default",
+                callback: html => {
+                    const form = html.find("form")[0];
+                    if ( !form.data.files.length ) return ui.notifications.error("You did not upload a data file!");
+                    readTextFromFile(form.data.files[0]).then(rosterXML => RosterImporter.import(rosterXML));
+                }
+            },
+            no: {
+                icon: "<i class=\"fas fa-times\"></i>",
+                label: "Cancel",
+                cssClass: "no"
+            }
+        }
+    })
+
+    html.find('.import-roster').click(()=>{
+        d.render(true)})
+});

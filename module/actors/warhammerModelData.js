@@ -51,11 +51,7 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                         integer: true,
                     }),
                     reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false}),
-                    crit: new fields.NumberField({
-                        required: false,
-                        nullable: true,
-                        integer: true,
-                    }),
+                    crit: new fields.ArrayField(new fields.StringField({required: false}), {required:false, initial:["6"]}),
                 }),
             }),
             woundroll: new fields.SchemaField({
@@ -65,11 +61,7 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                     integer: true,
                 }),
                 reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:true}),
-                crit: new fields.NumberField({
-                    required: false,
-                    nullable: true,
-                    integer: true,
-                }),
+                crit: new fields.ArrayField(new fields.StringField({required: false}), {required:false, initial:["6"]}),
             }),
             cover: new fields.BooleanField({
                 required: false,

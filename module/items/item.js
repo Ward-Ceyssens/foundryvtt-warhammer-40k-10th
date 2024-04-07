@@ -84,6 +84,10 @@ export class WarhammerItem extends Item {
             actorData.modifiers.hitroll.ranged.bonus += modifiers.hitroll
 
         actorData.modifiers.woundroll.bonus += modifiers.woundroll
+
+        if (modifiers.overwatch)
+            actorData.modifiers.overwatch = modifiers.overwatchValue
+
         actorData.modifiers.grants.cover |= modifiers.cover
         weaponData.items = weaponData.items.filter(x => !x.system.optional || modifiers.tags.includes(x._id))
         if (weaponData.items.find(x => x.name.toUpperCase() == "IGNORES COVER"))
@@ -101,9 +105,6 @@ export class WarhammerItem extends Item {
 
         //apply weapon overrides
         this._applymodifiers(actorData.modifiers.weapon, weaponData)
-        console.log(targetData.modifiers.grants.weapon)
-        console.log(actorData.modifiers.weapon)
-        console.log(weaponData)
 
         let completeAttackData = {
             models: controlled,
@@ -170,7 +171,7 @@ export class WarhammerItem extends Item {
                     },
                 },
                 targets: {
-                    hit: weaponData.skill,
+                    hit: actorData.modifiers.overwatch || weaponData.skill,
                     wound: this._woundMinRoll(weaponData.strength, targetData.stats.toughness),
                     save: (await this._calcSaveTarget(weaponData, targetData)).savetarget,
                     damage: targetData.feelnopain,
@@ -193,9 +194,8 @@ export class WarhammerItem extends Item {
                         completeAttackData.allRolls.push(x.damage)
                 })
                 singleUnitAttackData.stats.hits += results.hits
-                singleUnitAttackData.stats.wounds+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.wound), 0)
-                singleUnitAttackData.stats.saves+= results.rest.reduce((previousValue, currentValue) => previousValue + Boolean(currentValue.save), 0)
-
+                singleUnitAttackData.stats.wounds+= results.rest.reduce((previousValue, currentValue) => previousValue + currentValue.wounded || 0, 0)
+                singleUnitAttackData.stats.saves+= results.rest.reduce((previousValue, currentValue) => previousValue + currentValue.notsaved || 0, 0)
                 for (const rest of results.rest) {
                     let damage = rest.damage?.total || 0
                     singleUnitAttackData.stats.damage = {
@@ -251,9 +251,10 @@ export class WarhammerItem extends Item {
 
     async _singleAttackRoll(model, weaponData, actorData, targetData, targets) {
         let isMelee = weaponData.range === 0
-        if (weaponData.items.find(x => x.name.toUpperCase() === "INDIRECT FIRE")
+        let indirect_fire = weaponData.items.find(x => x.name.toUpperCase() === "INDIRECT FIRE")
+        if (indirect_fire
             //check if we can target anyone normally (visible to given token)
-            && (x.system.optional || //if set as optional then this tag is turned on intentionally for this attack, meaning we apply the effects regardless of LOS
+            && (indirect_fire.system.optional || //if set as optional then this tag is turned on intentionally for this attack, meaning we apply the effects regardless of LOS
                 //if not set as optional then check LOS to see if this should apply
                 !targets.some((target) => model.los.contains(target.center.x, target.center.y) && getBaseToBaseDist(model, target) <= weaponData.range))){
             actorData.modifiers.hitroll.ranged.bonus-=1
@@ -275,6 +276,7 @@ export class WarhammerItem extends Item {
             }
         } else {
             let hitstr = `1d6`
+            let hitTargetNum = weaponData.skill;
             if (weaponData.items.find(x => x.name.toUpperCase() === "HEAVY")){
                 actorData.modifiers.hitroll.ranged.bonus += 1
                 actorData.modifiers.hitroll.melee.bonus += 1
@@ -283,13 +285,17 @@ export class WarhammerItem extends Item {
                 || (actorData.modifiers.hitroll.melee.bonus && isMelee) )
                 hitstr += "+" + Math.max(-1, Math.min(1, actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].bonus))
 
+            if (actorData.modifiers.overwatch){
+                hitstr = '1d6'
+                hitTargetNum = actorData.modifiers.overwatch
+            }
 
             let hroll = new Roll(hitstr);
             await hroll.evaluate({async: true});
-            let hit = hroll.total >= weaponData.skill
+            let hit = hroll.total >= hitTargetNum
             if (hroll.dice.find(x => x.values.includes(1)))
                 hit = false
-            if (hroll.dice[0].total >= (actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].crit || 6)){
+            if (this._shouldCrit(actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].crit, hroll, hit)){
                 hit = true
                 critHit = true
             }
@@ -302,11 +308,11 @@ export class WarhammerItem extends Item {
                 hroll.dice[0].reroll("r<7")
                 hroll = Roll.fromTerms(hroll.terms)
                 result.hitroll= hroll
-                hit = hroll.total >= weaponData.skill
+                hit = hroll.total >= hitTargetNum
                 critHit = false;
                 if (hroll.dice.find(x => x.values.includes(1)))
                     hit = false
-                if (hroll.dice[0].total >= (actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].crit || 6)){
+                if (this._shouldCrit(actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].crit, hroll, hit)){
                     hit = true
                     critHit = true
                 }
@@ -330,7 +336,9 @@ export class WarhammerItem extends Item {
             }
             let subresult = {
                 // wound: "",
+                wounded: false,
                 // save: "",
+                notsaved: false,
                 // damage: "",
             }
             result.rest.push(subresult)
@@ -342,12 +350,12 @@ export class WarhammerItem extends Item {
                     total: "N/A",
                     isDeterministic: true,
                 }
+                subresult.wounded = true
             } else {
                 for (let anti of weaponData.items.filter(x => x.name.toUpperCase().startsWith("ANTI-"))) {
-                    console.log(anti)
                     let targettag = anti.name.split("-")[1]
                     if (targetData.tags.map(x => x.toUpperCase()).includes(targettag.toUpperCase())){
-                        actorData.modifiers.woundroll.crit = Math.min(actorData.modifiers.woundroll.crit, anti.system.value)
+                        actorData.modifiers.woundroll.crit.push(anti.system.value.toString())
                     }
                 }
                 let woundstr = `1d6`
@@ -357,34 +365,34 @@ export class WarhammerItem extends Item {
 
                 let wroll = new Roll(woundstr);
                 await wroll.evaluate({async: true});
-                let wound = wroll.total >= successnum
+                subresult.wounded = wroll.total >= successnum
 
                 if (wroll.dice.find(x => x.values.includes(1)))
-                    wound = false
-                if (wroll.dice[0].total >= (actorData.modifiers.woundroll.crit || 6)) {
-                    wound = true
+                    subresult.wounded = false
+                if (this._shouldCrit(actorData.modifiers.woundroll.crit, wroll, subresult.wounded)) {
+                    subresult.wounded = true
                     critWound = true
                 }
 
-                if (!wound && weaponData.items.find(x => x.name.toUpperCase() === "TWIN-LINKED")) {
+                if (!subresult.wounded && weaponData.items.find(x => x.name.toUpperCase() === "TWIN-LINKED")) {
                     actorData.modifiers.woundroll.reroll.push("fail")
                 }
                 //rerolls
-                if (this._shouldReroll(actorData.modifiers.woundroll.reroll, wroll, wound)){
+                if (this._shouldReroll(actorData.modifiers.woundroll.reroll, wroll, subresult.wounded)){
                     wroll.dice[0].reroll("r<7")
                     wroll = Roll.fromTerms(wroll.terms)
-                    wound = wroll.total >= successnum
+                    subresult.wounded = wroll.total >= successnum
                     critWound = false;
                     if (wroll.dice.find(x => x.values.includes(1)))
-                        wound = false
-                    if (wroll.dice[0].total >= (actorData.modifiers.woundroll.crit || 6)){
-                        wound = true
+                        subresult.wounded = false
+                    if (this._shouldCrit(actorData.modifiers.woundroll.crit, wroll, subresult.wounded)) {
+                        subresult.wounded = true
                         critWound = true
                     }
                 }
                 subresult.wound = wroll
 
-                if (!wound) {
+                if (!subresult.wounded) {
                     continue
                 }
             }
@@ -395,16 +403,17 @@ export class WarhammerItem extends Item {
                     total: "N/A",
                     isDeterministic: true,
                 }
+                subresult.notsaved = true
             } else {
                 let {savemod, savetarget} = await this._calcSaveTarget(weaponData, targetData);
 
                 let sroll = new Roll(`1d6` + savemod);
                 await sroll.evaluate({async: true});
                 subresult.save = sroll
-                let notsave = sroll.total < savetarget
+                subresult.notsaved = sroll.total < savetarget
                 if (sroll.dice.find(x => x.values.includes(1)))
-                    notsave = true
-                if (!notsave) {
+                    subresult.notsaved = true
+                if (!subresult.notsaved) {
                     continue
                 }
             }
@@ -559,6 +568,22 @@ export class WarhammerItem extends Item {
                 }
             } else {
                 if (roll.dice[0].total <= parseInt(reroll))
+                    return true
+            }
+        }
+        return false
+    }
+    _shouldCrit(crits, roll, success){
+        for (const crit of crits) {
+            //yes this chain is stupid, it's to support more text cases in the future
+            if (isNaN(parseInt(crit))){
+                switch (crit) {
+                    case 'success':
+                        if (success)
+                            return true
+                }
+            } else {
+                if (roll.dice[0].total >= parseInt(crit))
                     return true
             }
         }

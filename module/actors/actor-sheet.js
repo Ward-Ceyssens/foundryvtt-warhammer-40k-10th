@@ -262,11 +262,11 @@ export class WarhammerModelSheet extends ActorSheet {
             ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among attackers`);
             return
         }
-
         let d = new Dialog({
             title: "Test Dialog",
             content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
                 actor:this,
+                shouldOverwatch:game.combat != null && this.actor.system.faction !== game.combat?.combatant?.actor.system.faction,
                 weapon:weaponData,
                 target:targeted.first(),
                 models: WarhammerActor.reduceToCount(controlled),
@@ -287,7 +287,9 @@ export class WarhammerModelSheet extends ActorSheet {
                             hitroll: parseInt(html.find('input[name=hitroll]')[0].value) || 0 ,
                             woundroll: parseInt(html.find('input[name=woundroll]')[0].value) || 0,
                             cover: $.map(html.find('input[name=cover]:checked'),x => x.checked)[0],
-                            tags: $.map(html.find('input[name=optionaltags]:checked'),x => x.id)
+                            tags: $.map(html.find('input[name=optionaltags]:checked'),x => x.id),
+                            overwatch: $.map(html.find('input[name=overwatch]:checked'),x => x.checked)[0],
+                            overwatchValue: parseInt(html.find('input[name=overwatch-value]')[0].value) || 0,
                         }
                         weapon.fullAttack(controlled, targeted, weaponData, actorData, modifiers)
                     }
