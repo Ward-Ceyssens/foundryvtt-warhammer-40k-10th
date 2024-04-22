@@ -49,29 +49,29 @@
     </div>
     <hr>
     <div class="row">
-        <div class="col">
+        <div>
             <label for="hitroll">hit roll bonus</label>
             <input id="hitroll" name="hitroll" type="text" value="{{actor.system.modifiers.hitroll}}" style="width: -webkit-fill-available" data-dtype="Number"/>
         </div>
-        <div class="col">
+        <div>
             <label for="woundroll">wound roll</label>
             <input id="woundroll" name="woundroll" type="text" value="{{actor.system.modifiers.woundroll}}" style="width: -webkit-fill-available" data-dtype="Number"/>
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <input id="overwatch" type="checkbox" name="overwatch" {{checked shouldOverwatch}} data-dtype="Boolean">
-            <label for="overwatch">Fire Overwatch</label>
-            <input id="overwatch-value" name="overwatch-value" type="number" value="6" style="width: -webkit-fill-available" data-dtype="Number"/>
+            <input id="overwatch" type="checkbox" name="overwatch" {{checked shouldOverwatch}} data-dtype="Boolean" onchange="document.getElementById('overwatch-value').disabled = !this.checked">
+            <label for="overwatch" style="min-width: fit-content;">Fire Overwatch</label>
+            <input id="overwatch-value" name="overwatch-value" type="number" {{#unless shouldOverwatch}}disabled{{/unless}} value="6" min="1" max="6" style="width: 1.5em;text-align: center;margin-left: 0.5em;" data-dtype="Number"/>
         </div>
     </div>
-    <hr>
     <div class="row">
         <div class="col">
             <input id="cover" type="checkbox" name="cover" {{checked target.system.modiefiers.cover}} data-dtype="Boolean">
             <label for="cover">has cover?</label>
         </div>
     </div>
+    <hr>
     <div class="tags">
         {{#each weapon.items as | tag |}}
             {{#if tag.system.optional}}

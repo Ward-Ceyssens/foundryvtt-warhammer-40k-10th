@@ -1,1 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 7.35 7"><defs><style>.cls-1{fill:none;}.cls-2{clip-path:url(#clip-path);}.cls-3{fill:#231f20;}</style><clipPath id="clip-path" transform="translate(-2.21 -1.51)"><rect class="cls-1" width="12.29" height="10.15"/></clipPath></defs><title>MeleeAsset 1</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><g class="cls-2"><path class="cls-3" d="M3.81,5.85l-.13-.31-.53.54.53.53-.59.59-.41.41-.13-.14-.34.34.35.35.35.35.34-.34L3.12,8l.4-.41L4.11,7l.53.53L5.18,7l-.31-.13-.19-.19L6.24,5.16l.65-.65c.38-.38,2.25-2.39,2.32-3-.62.05-2.62,1.94-3,2.32l-.62.63L4,6Z" transform="translate(-2.21 -1.51)"/><path class="cls-3" d="M6.9,6.91,6.6,7l.53.53L7.66,7l.59.59L8.66,8l-.14.13.34.34.35-.35.35-.35-.33-.34-.14.14L8.68,7.2l-.59-.59.53-.53-.53-.54L8,5.85,7.77,6,6.21,4.48l-.65-.65c-.38-.38-2.38-2.25-3-2.32.06.62,1.95,2.62,2.32,3,0,0,.31.3.63.63L7.1,6.72Z" transform="translate(-2.21 -1.51)"/></g></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" height="50" width="50">
+    <g id="warhammer" transform="translate(10),rotate(45, 10, 25)">
+        <path fill="none" stroke="black" stroke-width="3" d="
+        M 10 45
+        L 10 10
+        Z"/>
+        <mask id="hammercorner">
+            <rect fill="white" x="0" y="0" height="100%" width="100%"/>
+            <rect fill="black" x="0" y="0" height="50%" width="50%" transform="rotate(45), translate(-22,-22)"/>
+        </mask>
+        <rect fill="black" x="0" y="0" height="10" width="20" mask="url(#hammercorner)"/>
+    </g>
+    <g id="chainsword" transform="scale(1.3),translate(5,-10),rotate(-45, 10, 25)">
+        <path fill="none" stroke="black" stroke-width="3" d="
+        M 10 50
+        L 10 40
+        Z"/>
+                <mask id="swordtipnteeth">
+                    <rect fill="black" x="0" y="0" height="100%" width="100%"/>
+                    <rect fill="white" x="6" y="10" height="30" width="6" rx="2"/>
+                    <rect fill="white" x="0" y="50%" height="50%" width="50%"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,-4),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,-2),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,2),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,4),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,6),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,8),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,10),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,12),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,14),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,16),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,18),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,20),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,22),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,24),rotate(45)"/>
+                    <rect fill="black" x="5" y="5" height="100%" width="10" transform="translate(0,26),rotate(45)"/>
+                </mask>
+
+        <rect fill="black" x="6" y="10" height="30" width="6" mask="url(#swordtipnteeth)"/>
+    </g>
+</svg>

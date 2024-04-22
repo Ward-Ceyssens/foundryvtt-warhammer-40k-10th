@@ -107,6 +107,16 @@ export class RosterImporter {
                 }]
             }, {parent: actor})
         }
+        if (data.name === "Lone Operative") {
+            await ActiveEffect.create({
+                label: data.name,
+                changes: [{
+                    key: 'system.loneOperative',
+                    value: true,
+                    mode: 5,
+                }]
+            }, {parent: actor})
+        }
 
         await Item.create(data, {parent: actor})
     }

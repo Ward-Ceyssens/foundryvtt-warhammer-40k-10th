@@ -452,7 +452,7 @@ export class WarhammerItem extends Item {
 
     _inRange(controlled, targeted, range) {
         for (const target of targeted) {
-            range = target.actor?.system?.modifiers?.grants?.weapon?.range || range
+            range = target.actor?.system?.loneOperative ?  12 : range
         }
         if (range === 0){
             return this._inMeleeRange(controlled, targeted)
@@ -565,6 +565,9 @@ export class WarhammerItem extends Item {
                     case 'fail':
                         if (!success)
                             return true
+                        break
+                    default:
+                        return false
                 }
             } else {
                 if (roll.dice[0].total <= parseInt(reroll))
@@ -581,6 +584,9 @@ export class WarhammerItem extends Item {
                     case 'success':
                         if (success)
                             return true
+                        break
+                    default:
+                        return false
                 }
             } else {
                 if (roll.dice[0].total >= parseInt(crit))

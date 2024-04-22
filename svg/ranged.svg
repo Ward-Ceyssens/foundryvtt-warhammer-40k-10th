@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="50" width="50">
+    <path fill="none" stroke="black" stroke-width="3" d="
+    M 0 25
+    L 5 25
+    A 20 20 0 0 0 25 45
+    L 25 30
+    M 0 25
+    Z"/>
+    <path fill="none" stroke="black" stroke-width="3" transform="rotate(180, 25, 25)" d="
+    M 0 25
+    L 5 25
+    A 20 20 0 0 0 25 45
+    L 25 30
+    M 0 25
+    Z"/>
+    <path fill="none" stroke="black" stroke-width="3" transform="rotate(90, 25, 25)" d="
+    M 0 25
+    L 5 25
+    A 20 20 0 0 0 25 45
+    L 25 30
+    M 0 25
+    Z"/>
+    <path fill="none" stroke="black" stroke-width="3" transform="rotate(270, 25, 25)" d="
+    M 0 25
+    L 5 25
+    A 20 20 0 0 0 25 45
+    L 25 30
+    M 0 25
+    Z"/>
+</svg>

@@ -98,6 +98,18 @@ Hooks.on('preCreateActor', function (actor, data, options, userid) {
             width: mmToInch(actor.system.baseSize),
         }
     })
+    if (actor.type == "objective"){
+        actor.updateSource({
+            img: "icons/svg/target.svg",
+            prototypeToken: {
+                displayName: 30,
+                texture: {
+                    src: "icons/svg/target.svg",
+                    tint: "#000000",
+                }
+            }
+        })
+    }
 })
 //stolen from https://gitlab.com/tposney/midi-qol/-/blob/v11/src/module/chatMessageHandling.ts
 Hooks.on('renderChatMessage', function (message, html, messageData) {
@@ -204,6 +216,11 @@ Hooks.once("dragRuler.ready", (SpeedProvider) => {
 })
 
 Hooks.on('renderActorDirectory', (app, html, data) => {
+
+    //return early if user isn't a gm (and thus can't create folders, which the importer does)
+    if (!game.user.isGM)
+        return
+
     html.find('div.action-buttons').append("<button class='import-roster'><i class=\"fas fa-file-import\"></i>import roster</button>");
     let d = new Dialog({
         title: "Roster Import",

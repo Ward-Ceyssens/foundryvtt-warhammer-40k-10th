@@ -40,6 +40,8 @@
 .warhammer.sheet header.sheet-header{
   align-items: unset;
   flex: unset;
+}
+.warhammer.sheet.actor header.sheet-header{
   z-index: 1;
   height: var(--header-height);
 }
@@ -277,7 +279,10 @@
 .attack-dialog .row{
   display: flex;
 }
-
+.attack-dialog .col{
+  display: inline-flex;
+  align-items: center;
+}
 div.awesomplete {
   display: unset;
 }

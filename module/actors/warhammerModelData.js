@@ -68,11 +68,12 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                 nullable: true,
                 // initial: null
             }),
-            weapon: new fields.SchemaField(WeaponModifiers.defineSchema(),{
-                    required: false,
-                    nullable: true,
-                    // initial: null
-                })
+            //could be useful at some point
+            // weapon: new fields.SchemaField(WeaponModifiers.defineSchema(),{
+            //         required: false,
+            //         nullable: true,
+            //         // initial: null
+            //     })
         },
             object));
     }
@@ -156,6 +157,10 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                 nullable: true,
                 required: true,
                 integer: true
+            }),
+            loneOperative: new fields.BooleanField({
+                required: true,
+                initial: false
             }),
             modifiers: new WarhammerModifiersField({
                 grants: new WarhammerModifiersField(),

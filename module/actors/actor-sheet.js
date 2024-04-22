@@ -262,22 +262,23 @@ export class WarhammerModelSheet extends ActorSheet {
             ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among attackers`);
             return
         }
-        let d = new Dialog({
-            title: "Test Dialog",
-            content: Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
-                actor:this,
-                shouldOverwatch:game.combat != null && this.actor.system.faction !== game.combat?.combatant?.actor.system.faction,
-                weapon:weaponData,
-                target:targeted.first(),
-                models: WarhammerActor.reduceToCount(controlled),
-                targets: WarhammerActor.reduceToCount(targeted),
-                dropped:{
-                    attackers: {
-                        range:WarhammerActor.reduceToCount(outOfRange),
-                        weapon: WarhammerActor.reduceToCount(noWeapon),
-                    }
+        let dialogHtml = Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
+            actor:this,
+            shouldOverwatch:game.combat != null && this.actor.system.faction !== game.combat?.combatant?.actor.system.faction,
+            weapon:weaponData,
+            target:targeted.first(),
+            models: WarhammerActor.reduceToCount(controlled),
+            targets: WarhammerActor.reduceToCount(targeted),
+            dropped:{
+                attackers: {
+                    range:WarhammerActor.reduceToCount(outOfRange),
+                    weapon: WarhammerActor.reduceToCount(noWeapon),
                 }
-            }),
+            }
+        })
+        let d = new Dialog({
+            title: "Attack Dialog",
+            content: dialogHtml,
             buttons: {
                 one: {
                     icon: '<i class="fas fa-check"></i>',
@@ -289,12 +290,13 @@ export class WarhammerModelSheet extends ActorSheet {
                             cover: $.map(html.find('input[name=cover]:checked'),x => x.checked)[0],
                             tags: $.map(html.find('input[name=optionaltags]:checked'),x => x.id),
                             overwatch: $.map(html.find('input[name=overwatch]:checked'),x => x.checked)[0],
-                            overwatchValue: parseInt(html.find('input[name=overwatch-value]')[0].value) || 0,
+                            overwatchValue: Math.max(Math.min(parseInt(html.find('input[name=overwatch-value]')[0].value) || 0, 6), 1),
                         }
                         weapon.fullAttack(controlled, targeted, weaponData, actorData, modifiers)
                     }
                 },
             },
+
         });
         d.render(true);
     }
