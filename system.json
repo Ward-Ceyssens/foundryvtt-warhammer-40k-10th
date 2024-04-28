@@ -13,13 +13,8 @@
   ],
   "esmodules": ["module/warhammer.js"],
   "styles": ["styles/simple.css", "libs/awesomplete/awesomplete.css"],
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English",
-      "path": "lang/en.json"
-    }
-  ],
+  "manifest": "https://github.com/Ward-Ceyssens/foundryvtt-warhammer-40k-10th/releases/latest/download/system.json",
+  "download": "https://github.com/Ward-Ceyssens/foundryvtt-warhammer-40k-10th/releases/download/v0.5.1/system.zip",
   "compatibility": {
     "minimum": "10",
     "verified": "10.303"

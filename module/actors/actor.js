@@ -43,7 +43,7 @@ export class WarhammerActor extends Actor {
     generateCapturePercentages(){
         //group and total OC by faction
         let capture = this.system.tokens.map(id => canvas.tokens.get(id)).reduce((map, token) => {
-                if (!token.actor.system.stats.control)
+                if (!token.actor.system.stats.control > 0)
                     return map;
                 let faction = token.actor.system.faction
                 if (map.has(faction))
