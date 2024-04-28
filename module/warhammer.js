@@ -36,10 +36,10 @@ Hooks.once('init', function() {
     CONFIG.WARHAMMER = {};
 
     //define data models
-    CONFIG.Actor.systemDataModels.model = WarhammerModelData;
-    CONFIG.Actor.systemDataModels.objective = WarhammerObjectiveData;
-    CONFIG.Item.systemDataModels.weapon = WeaponData;
-    CONFIG.Item.systemDataModels.wtag = WeaponTagData;
+    CONFIG.Actor.dataModels.model = WarhammerModelData;
+    CONFIG.Actor.dataModels.objective = WarhammerObjectiveData;
+    CONFIG.Item.dataModels.weapon = WeaponData;
+    CONFIG.Item.dataModels.wtag = WeaponTagData;
 
     // Define custom Document classes
     CONFIG.Actor.documentClass = WarhammerActor;
@@ -221,7 +221,7 @@ Hooks.on('renderActorDirectory', (app, html, data) => {
     if (!game.user.isGM)
         return
 
-    html.find('div.action-buttons').append("<button class='import-roster'><i class=\"fas fa-file-import\"></i>import roster</button>");
+    html.find('div.action-buttons').append("<button class='import-roster'><i class=\"fas fa-file-import\"></i>Import Roster</button>");
     let d = new Dialog({
         title: "Roster Import",
         content: "<form autocomplete=\"off\" onsubmit=\"event.preventDefault();\">\n" +

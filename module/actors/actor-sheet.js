@@ -190,7 +190,7 @@ export class WarhammerModelSheet extends ActorSheet {
         const name = `New ${type.capitalize()} Effect`;
         // Prepare the item object.
         const itemData = {
-            label: name,
+            name: name,
             system: system
         };
         if (type === "temporary")

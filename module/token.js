@@ -16,14 +16,18 @@ export class WarhammerTokenDocument extends TokenDocument {
 }
 
 export class WarhammerToken extends Token {
-    refresh(){
-        const r = super.refresh()
+    async _refreshBorder(){
         this.hitArea = new PIXI.Circle(this.w/2,this.w/2, this.w/2)
+        if (this.actor?.type === "objective") //TODO split objective border and capture piechart into 2 so borders can be drawn here
+            return
         if (this.controlled || this.hover){
             this.border.clear()
             this.border.lineStyle(4, 0x000000, 0.8).drawCircle(this.w/2,this.w/2, this.w/2);
             this.border.lineStyle(2, this._getBorderColor() || 0xFF9829, 1.0).drawCircle(this.w/2,this.w/2, this.w/2);
         }
+        else this.border.clear()
+    }
+    async _refreshVisibility(){
         if (canvas.initialized && this.actor?.type === "objective"){
             let cap = this.actor.generateCapturePercentages()
             let total = cap.reduce((acc, val) => acc+val[1], 0)
@@ -45,10 +49,11 @@ export class WarhammerToken extends Token {
                 }
             }
             if (this.controlled || this.hover){
+                this.border.lineStyle(4, 0x000000, 0.8).drawCircle(x,y,radius);
+                this.border.lineStyle(2, this._getBorderColor() || 0xFF9829, 1.0).drawCircle(x,y,radius);
                 this.border.lineStyle(4, 0x000000, 0.8).drawCircle(x,y,radius+300);
                 this.border.lineStyle(2, this._getBorderColor() || 0xFF9829, 1.0).drawCircle(x,y,radius+300);
             }
         }
-        return r
     }
 }

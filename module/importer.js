@@ -99,7 +99,7 @@ export class RosterImporter {
 
         if (data.name === "Stealth") {
             await ActiveEffect.create({
-                label: data.name,
+                name: data.name,
                 changes: [{
                     key: 'system.modifiers.grants.hitroll.ranged.bonus',
                     value: -1,
@@ -109,7 +109,7 @@ export class RosterImporter {
         }
         if (data.name === "Lone Operative") {
             await ActiveEffect.create({
-                label: data.name,
+                name: data.name,
                 changes: [{
                     key: 'system.loneOperative',
                     value: true,
