@@ -210,7 +210,13 @@ export class WarhammerModelSheet extends ActorSheet {
      */
     async _onRoll(event) {
         event.preventDefault();
-        if (canvas.tokens.controlled.length == 0) {
+        let controlled = canvas.tokens.controlled
+
+        //add sheets token if nothing else is selected
+        if (controlled.length === 0 && this.actor.token?._object) {
+            controlled.push(this.actor.token._object)
+        }
+        if (controlled.length === 0) {
             ui.notifications.error("Aborting Attack: No tokens selected");
             return
         }
@@ -230,10 +236,11 @@ export class WarhammerModelSheet extends ActorSheet {
         weaponData.tagstring = weapon.getTagstring()
 
         const targeted = game.user.targets;
-        let controlled = weapon._inRange(canvas.tokens.controlled, targeted, weapon.system.range);
+
+        controlled = weapon._inRange(controlled, targeted, weapon.system.range);
         let outOfRange = canvas.tokens.controlled.filter(x => !controlled.includes(x));
         //selected and targeted must make sense
-        if (targeted.length == 0) {
+        if (targeted.length === 0) {
             ui.notifications.error("Aborting Attack: No targets selected");
             return
         }
@@ -243,7 +250,7 @@ export class WarhammerModelSheet extends ActorSheet {
                 return
             }
         }
-        if (controlled.length == 0) {
+        if (controlled.length === 0) {
             ui.notifications.error("Aborting Attack: No tokens in range to attack target");
             return
         }
@@ -258,8 +265,8 @@ export class WarhammerModelSheet extends ActorSheet {
         let noWeapon = controlled.filter(x => !tmp.includes(x));
         controlled = tmp
 
-        if (controlled.length == 0) {
-            ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among attackers`);
+        if (controlled.length === 0) {
+            ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among selected tokens`);
             return
         }
         let dialogHtml = Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
