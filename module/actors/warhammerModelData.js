@@ -2,7 +2,7 @@ import {WeaponData} from "../items/weaponData.js";
 
 class SplitStringField extends foundry.data.fields.StringField {
     initialize(value, model) {
-        return value.split(",").map(x => x.trim());
+        return (value||"").split(",").map(x => x.trim());
     }
 
 }
