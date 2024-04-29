@@ -1,8 +1,7 @@
 {
   "id": "warhammer-40k-10th",
-  "version": "0.6.0",
+  "version": "#{VERSION}#",
   "title": "Warhammer 40K 10th edition",
-  "url": "https://github.com/Ward-Ceyssens/foundryvtt-warhammer-40k-10th",
   "description": "An implementation of the Warhammer 40K 10th edition ruleset",
   "license": "LICENSE.txt",
   "authors": [
@@ -13,8 +12,9 @@
   ],
   "esmodules": ["module/warhammer.js"],
   "styles": ["styles/simple.css", "libs/awesomplete/awesomplete.css"],
-  "manifest": "https://github.com/Ward-Ceyssens/foundryvtt-warhammer-40k-10th/releases/latest/download/system.json",
-  "download": "https://github.com/Ward-Ceyssens/foundryvtt-warhammer-40k-10th/releases/download/v0.6.1/system.zip",
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
   "compatibility": {
     "minimum": "11",
     "verified": "11.315"
