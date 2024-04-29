@@ -71,7 +71,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
+        with:
+          submodules: recursive
 
       # Extract version embedded in the tag.
       # This step expects the tag to be one of the following formats:
@@ -83,8 +84,6 @@ jobs:
       - name: Extract Version From Tag
         id: get_version
         uses: battila7/get-version-action@v2
-        with:
-          submodules: recursive
 
       # Modify "module.json" with values specific to the release.
       # Since the values for the "version" and "url" keys aren't known ahead of
