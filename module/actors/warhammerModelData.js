@@ -107,7 +107,7 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                     value: new fields.NumberField({
                         nullable: false,
                         required: true,
-                        initial: 10,
+                        initial: 1,
                         integer: true
                     }),
                     min: new fields.NumberField({
@@ -119,7 +119,7 @@ export class WarhammerModelData extends foundry.abstract.DataModel {
                     max: new fields.NumberField({
                         nullable: false,
                         required: true,
-                        initial: 10,
+                        initial: 1,
                         integer: true,
                     })
                 }),
