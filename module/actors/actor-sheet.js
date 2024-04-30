@@ -237,8 +237,7 @@ export class WarhammerModelSheet extends ActorSheet {
 
         const targeted = game.user.targets;
 
-        controlled = weapon._inRange(controlled, targeted, weapon.system.range);
-        let outOfRange = canvas.tokens.controlled.filter(x => !controlled.includes(x));
+
         //selected and targeted must make sense
         if (targeted.length === 0) {
             ui.notifications.error("Aborting Attack: No targets selected");
@@ -250,12 +249,8 @@ export class WarhammerModelSheet extends ActorSheet {
                 return
             }
         }
-        if (controlled.length === 0) {
-            ui.notifications.error("Aborting Attack: No tokens in range to attack target");
-            return
-        }
 
-        //collect attackers
+        //filter attackers: has weapon?
         let tmp = controlled.filter( token => {
             for (const item of token.actor.items) {
                 if (item.equals(weapon))
@@ -269,6 +264,18 @@ export class WarhammerModelSheet extends ActorSheet {
             ui.notifications.error(`Aborting Attack: Cannot find ${weapon.name} among selected tokens`);
             return
         }
+
+        //filter attackers: in range?
+        tmp = weapon._inRange(controlled, targeted, weapon.system.range);
+        let outOfRange = controlled.filter(x => !tmp.includes(x));
+        controlled = tmp
+
+        if (controlled.length === 0) {
+            ui.notifications.error("Aborting Attack: No tokens in range to attack target");
+            return
+        }
+
+
         let dialogHtml = Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
             actor:this,
             shouldOverwatch:game.combat != null && this.actor.system.faction !== game.combat?.combatant?.actor.system.faction,
@@ -278,6 +285,7 @@ export class WarhammerModelSheet extends ActorSheet {
             targets: WarhammerActor.reduceToCount(targeted),
             dropped:{
                 attackers: {
+                    display: outOfRange?.length || noWeapon?.length,
                     range:WarhammerActor.reduceToCount(outOfRange),
                     weapon: WarhammerActor.reduceToCount(noWeapon),
                 }

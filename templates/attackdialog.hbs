@@ -1,5 +1,6 @@
 <div class="attack-dialog">
     <div class="unit-summary">
+        {{#if dropped.attackers.display}}
         <details class="units">
             <summary>
             {{#each models as | model |}}
@@ -33,6 +34,15 @@
                 <hr>
             </div>
         </details>
+        {{else}}
+        <div class="units">
+            {{#each models as | model |}}
+                <div>
+                    {{model.num}}x {{model.name}}
+                </div>
+            {{/each}}
+        </div>
+        {{/if}}
         <div>attack</div>
         <div class="targets">
             {{#each targets as | target |}}
