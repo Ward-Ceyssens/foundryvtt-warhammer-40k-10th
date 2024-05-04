@@ -18,8 +18,7 @@ export class RosterImporter {
             try {
                 await this._importUnit(selection, folder)
             } catch (e) {
-                ui.notifications.error("error while importing " + (xml.querySelector("selection[type='model']") || xml).getAttribute('name') + " some items may be missing")
-                console.error("error while importing " + (xml.querySelector("selection[type='model']") || xml).getAttribute('name') + " some items may be missing")
+                ui.notifications.error("error while importing \"" + (selection.querySelector("selection[type='model']") || selection).getAttribute('name') + "\" some items may be missing")
                 console.error(e)
             }
         })
@@ -62,31 +61,44 @@ export class RosterImporter {
 
             //items
             let actor = await Actor.create(data)
-            let rules = Array.from(xml.childNodes).find(a => a.tagName === "rules")
-            rules.childNodes.forEach(a => this._importItem(a, actor))
+            let rules = Array.from(xml.children).find(a => a.tagName === "rules")
+            for (const rule of rules.children) {
+                await this._importItem(rule, actor)
+            }
 
             let abilities = Array.from(xml.querySelectorAll("profile[typeName='Abilities']"))
             abilities.forEach(a => this._importItem(a, actor))
 
-            let weapons = Array.from(unitXml.childNodes).find(a => a.tagName === "selections")
+            let weapons = Array.from(unitXml.children).find(a => a.tagName === "selections")
             let recursiveSelections = a => {
-                if (a.firstChild.tagName === "selections") {
-                    a.firstChild.childNodes.forEach(b => recursiveSelections(b))
+                if (a.firstElementChild.tagName === "selections") {
+                    for (const child of a.firstChild.children) {
+                        recursiveSelections(child)
+                    }
                     return
                 }
                 this._importItem(a, actor)
             }
-            weapons.childNodes.forEach(a => recursiveSelections(a))
+            for (const weapon of weapons.children) {
+                recursiveSelections(weapon)
+            }
         }
     }
 
     static async _importItem(xml, actor){
-        if (xml.tagName === "rule")
-            this._importRule(xml, actor)
-        else if (xml.getAttribute('typeName') === "Abilities")
-            this._importAbility(xml, actor)
-        else if (xml.tagName === "selection" && ["rules", "profiles"].includes(xml.firstChild.tagName))
-            this._importWeapon(xml, actor)
+        try {
+            if (xml.tagName === "rule")
+                await this._importRule(xml, actor)
+            else if (xml.getAttribute('typeName') === "Abilities")
+                await this._importAbility(xml, actor)
+            else if (xml.tagName === "selection" && ["rules", "profiles"].includes(xml.firstElementChild.tagName))
+                await this._importWeapon(xml, actor)
+        }
+        catch (e) {
+            ui.notifications.error("error while importing \"" + actor.name + "\" some items may be missing")
+            console.error(e)
+        }
+
     }
 
     static async _importRule(xml, actor){
