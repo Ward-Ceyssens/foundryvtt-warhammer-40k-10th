@@ -37,12 +37,9 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                             nullable: true,
                             integer: true,
                         }),
-                        reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false}),
-                        crit: new fields.NumberField({
-                            required: false,
-                            nullable: true,
-                            integer: true,
-                        }),
+                        reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:false, initial:[]}),
+                        crit: new fields.ArrayField(new fields.StringField({required: false}), {required:false, initial:["6"]}),
+
                     }),
                 ranged: new fields.SchemaField({
                     bonus: new fields.NumberField({
@@ -50,7 +47,7 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                         nullable: true,
                         integer: true,
                     }),
-                    reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false}),
+                    reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:false, initial:[]}),
                     crit: new fields.ArrayField(new fields.StringField({required: false}), {required:false, initial:["6"]}),
                 }),
             }),
@@ -60,7 +57,7 @@ class WarhammerModifiersField extends foundry.data.fields.SchemaField {
                     nullable: true,
                     integer: true,
                 }),
-                reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:true}),
+                reroll: new fields.ArrayField(new fields.StringField({required: false}), {required:false, nullable:false, initial:[]}),
                 crit: new fields.ArrayField(new fields.StringField({required: false}), {required:false, initial:["6"]}),
             }),
             cover: new fields.BooleanField({
