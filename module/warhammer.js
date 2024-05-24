@@ -12,7 +12,7 @@ import {WarhammerAbilitySheet} from "./items/warhammer-ability-sheet.js";
 import {WarhammerWeaponSheet} from "./items/warhammer-weapon-sheet.js";
 import {WarhammerWTagSheet} from "./items/warhammer-wtag-sheet.js";
 import {WarhammerRuler} from "./warhammerRuler.js";
-import {WarhammerToken} from "./token.js";
+import {WarhammerToken, WarhammerTokenConfig, WarhammerTokenDocument} from "./token.js";
 import "../libs/awesomplete/awesomplete.js"
 import {WarhammerObjectiveData} from "./actors/warhammerObjectiveData.js";
 import {WarhammerObjectiveSheet} from "./actors/objective-sheet.js";
@@ -44,7 +44,7 @@ Hooks.once('init', function() {
     // Define custom Document classes
     CONFIG.Actor.documentClass = WarhammerActor;
     CONFIG.Item.documentClass = WarhammerItem;
-    // CONFIG.Token.documentClass = WarhammerTokenDocument;
+    CONFIG.Token.documentClass = WarhammerTokenDocument;
     CONFIG.Combat.initiative = {
         formula: '1d6',
         decimals: 2,
@@ -56,6 +56,8 @@ Hooks.once('init', function() {
     Items.registerSheet(SYSTEM_ID, WarhammerAbilitySheet, { types: ["ability"], makeDefault: true });
     Items.registerSheet(SYSTEM_ID, WarhammerWeaponSheet, { types: ["weapon"], makeDefault: true });
     Items.registerSheet(SYSTEM_ID, WarhammerWTagSheet, { types: ["wtag"], makeDefault: true });
+
+    DocumentSheetConfig.registerSheet(TokenDocument, SYSTEM_ID, WarhammerTokenConfig, { makeDefault: true });
 
     game.settings.register(SYSTEM_ID, 'melee_generosity', {
         name: 'Melee Generosity',
