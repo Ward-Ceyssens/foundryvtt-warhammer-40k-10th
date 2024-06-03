@@ -28,6 +28,11 @@ export class WarhammerModelSheet extends ActorSheet {
         const context = super.getData();
         context.SYSTEM_ID = SYSTEM_ID
         context.FACTIONS = FACTIONS
+        let factionSelectOptions = []
+        for (const key in FACTIONS) {
+            factionSelectOptions.push({key:key, value: key});
+        }
+        context.factionSelectOptions = factionSelectOptions
         // Use a safe clone of the actor data for further operations.
         const actorData = context.actor.system;
 
@@ -108,7 +113,7 @@ export class WarhammerModelSheet extends ActorSheet {
 
     /** @override */
     activateListeners(html) {
-        html[0].style.setProperty(`--faction-color`, FACTIONS[this.actor.system.faction]);
+        html[0].style.setProperty(`--faction-color`, FACTIONS[this.actor.system.faction].color);
         if (this.actor.system.invulnsave)
             html[0].style.setProperty(`--header-height`, "170px");
 
@@ -224,9 +229,9 @@ export class WarhammerModelSheet extends ActorSheet {
         const dataset = element.dataset;
         //TODO find a less stupid way to clone: deepClone(doesn't clone) and duplicate(doesn't copy modified values) don't work
         const weapon = this.actor.items.get(dataset.documentId)
-        let weaponData = expandObject(flattenObject(weapon.system))
+        let weaponData = foundry.utils.expandObject(foundry.utils.flattenObject(weapon.system))
         weaponData.name = weapon.name
-        let actorData = expandObject(flattenObject(this.actor.system))
+        let actorData = foundry.utils.expandObject(foundry.utils.flattenObject(this.actor.system))
 
         weaponData.items = []
         for (let tagid of weapon.system.tags) {
@@ -243,7 +248,13 @@ export class WarhammerModelSheet extends ActorSheet {
             ui.notifications.error("Aborting Attack: No targets selected");
             return
         }
+
         for (const target of targeted) {
+            //actor could be null if the token is linked to a deleted actor, or the link was otherwise broken
+            if (!target.actor){
+                ui.notifications.error("Aborting Attack: Targeting token with invalid actor");
+                return
+            }
             if (!target.actor.equals(targeted.first().actor)) {
                 ui.notifications.error("Aborting Attack: Targeting multiple actors with different stats");
                 return
@@ -275,14 +286,23 @@ export class WarhammerModelSheet extends ActorSheet {
             return
         }
 
+        let hitrollBonus;
+        if (weaponData.range !== 0){
+            hitrollBonus = targeted.first().actor.system.modifiers.grants.hitroll.ranged.bonus || this.actor.system.modifiers.hitroll.ranged.bonus
+        } else {
+            hitrollBonus = targeted.first().actor.system.modifiers.grants.hitroll.melee.bonus || this.actor.system.modifiers.hitroll.melee.bonus
+        }
+        let woundrollBonus = targeted.first().actor.system.modifiers.grants.woundroll.bonus || this.actor.system.modifiers.woundroll.bonus
 
         let dialogHtml = Handlebars.partials[`systems/${SYSTEM_ID}/templates/attackdialog.hbs`]({
-            actor:this,
+            actor:this.actor,
             shouldOverwatch:game.combat != null && this.actor.system.faction !== game.combat?.combatant?.actor.system.faction,
             weapon:weaponData,
             target:targeted.first(),
             models: WarhammerActor.reduceToCount(controlled),
             targets: WarhammerActor.reduceToCount(targeted),
+            hitrollBonus:hitrollBonus,
+            woundrollBonus:woundrollBonus,
             dropped:{
                 attackers: {
                     display: outOfRange?.length || noWeapon?.length,

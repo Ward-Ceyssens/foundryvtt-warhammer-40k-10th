@@ -41,7 +41,7 @@
                         <div class="val-and-max">
                             <input id="wounds" type="text" name="system.stats.wounds.value" value="{{system.stats.wounds.value}}" data-dtype="Number" />
                             <span>/</span>
-                            <input id="wounds" type="text" name="system.stats.wounds.max" value="{{system.stats.wounds.max}}" data-dtype="Number" />
+                            <input id="woundsMax" type="text" name="system.stats.wounds.max" value="{{system.stats.wounds.max}}" data-dtype="Number" />
                         </div>
                     </div>
                 </div>
@@ -388,11 +388,7 @@
                     <label for="faction">faction:</label>
 <!--                    <input id="faction" type="text" name="system.faction" value="{{system.faction}}" data-dtype="text"/>-->
                     <select id="faction" name="system.faction">
-                        {{#select system.faction}}
-                            {{#each FACTIONS as |color name|}}
-                                <option value="{{ name }}">{{ name }}</option>
-                            {{/each}}
-                        {{/select}}
+                        {{selectOptions factionSelectOptions selected=system.faction}}
                     </select>
                 </div>
                 <div class="tags">

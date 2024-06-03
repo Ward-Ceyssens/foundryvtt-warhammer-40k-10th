@@ -15,13 +15,9 @@ export class WarhammerRuler extends Ruler {
         else this.starttoken = null
         super._onDragStart(event)
     }
-    _computeDistance(gridSpaces) {
-        super._computeDistance(gridSpaces)
-    }
-
-    _getSegmentLabel(segment, totalDistance){
-        if (this.starttoken && this.targetToken && tokenRuler.active)
-            totalDistance = getBaseToBaseDist(this.starttoken, this.targetToken)
-        return super._getSegmentLabel(segment, totalDistance)
+    _getSegmentLabel(segment){
+        if (this.starttoken && this.targetToken && tokenRuler.active && segment.last)
+            this.totalDistance = getBaseToBaseDist(this.starttoken, this.targetToken)
+        return super._getSegmentLabel(segment)
     }
 }

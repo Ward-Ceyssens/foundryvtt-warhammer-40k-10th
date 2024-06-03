@@ -19,8 +19,8 @@ export class WarhammerActor extends Actor {
 
         // if (this.name != item.name)
         //     return false;
-        let thisSystem = expandObject(flattenObject(this.system))
-        let itemSystem = expandObject(flattenObject(item.system))
+        let thisSystem = foundry.utils.expandObject(foundry.utils.flattenObject(this.system))
+        let itemSystem = foundry.utils.expandObject(foundry.utils.flattenObject(item.system))
         delete thisSystem.stats.wounds.value
         delete itemSystem.stats.wounds.value
         return  JSON.stringify(thisSystem) === JSON.stringify(itemSystem)
@@ -52,7 +52,6 @@ export class WarhammerActor extends Actor {
                     map.set(faction, token.actor.system.stats.control)
                 return map
             }, new Map())
-
         //normalize
         capture = Array.from(capture)
         let total = capture.reduce((acc, val) => acc+val[1], 0)
@@ -63,7 +62,7 @@ export class WarhammerActor extends Actor {
         if (this.type !== "objective")
             return
         let models = canvas.tokens.placeables.filter(x =>
-            x.actor.type === "model"
+            x.actor?.type === "model"
             && (getBaseToBaseDist(token, x) <= this.system.captureRange)
         )
         this.system.tokens = models.map(x => x.id)
@@ -98,6 +97,30 @@ export class WarhammerActor extends Actor {
                 captured: max[0] !== "Uncaptured",
             }
         })
-        token.refresh()
+        token._refreshCapture()
+    }
+
+    _applymodifiers(src, dest){
+        if (!src)
+            return
+        for (const key in src) {
+            // simple type
+            if (typeof src[key] !== "object"){
+                dest[key] = src[key]
+                continue
+            }
+            //ignore nulls
+            if (src[key] === null){
+                continue
+            }
+            //append arrays
+            if (src[key] instanceof Array){
+                if (src[key].length > 0)
+                    dest[key].concat(src[key])
+                continue
+            }
+            //recursive on objects
+            this._applymodifiers(src[key], dest[key])
+        }
     }
 }

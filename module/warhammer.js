@@ -1,10 +1,8 @@
-// Import Modules
 import {WarhammerItem} from "./items/item.js";
 import {WarhammerActor} from "./actors/actor.js";
 import {WarhammerModelSheet} from "./actors/actor-sheet.js";
 import {getBaseToBaseDist, mmToInch, SYSTEM_ID} from "./constants.js";
 import {preloadHandlebarsTemplates} from "./templates.js";
-// import {WarhammerTokenDocument} from "./token.js";
 import {WarhammerModelData} from "./actors/warhammerModelData.js";
 import {WeaponData} from "./items/weaponData.js";
 import {WeaponTagData} from "./items/weaponTagData.js";
@@ -100,11 +98,11 @@ Hooks.on('preCreateActor', function (actor, data, options, userid) {
             width: mmToInch(actor.system.baseSize),
         }
     })
-    if (actor.type == "objective"){
+    if (actor.type === "objective"){
         actor.updateSource({
             img: "icons/svg/target.svg",
             prototypeToken: {
-                displayName: 30,
+                displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS,
                 texture: {
                     src: "icons/svg/target.svg",
                     tint: "#000000",
@@ -187,10 +185,15 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
     })
 })
 
-//TODO: make this hook onto the end of any token move instead
-Hooks.on("sightRefresh", ()=> {
-    let objectives = canvas.tokens.placeables.filter(x => x.actor?.type === "objective")
-    objectives.map(x => x.actor.updateObjective(x))
+
+let updateObjectives = foundry.utils.debounce(() => {
+        let objectives = canvas.tokens.placeables.filter(x => x.actor?.type === "objective")
+        objectives.map(x => x.actor.updateObjective(x))
+    }, 50
+)
+Hooks.on("refreshToken", (token, flags)=> {
+    if (flags.refreshBar || flags.refreshPosition)
+        updateObjectives()
 })
 
 

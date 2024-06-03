@@ -75,20 +75,8 @@ export class WarhammerItem extends Item {
         return tagstring
     }
     async fullAttack(controlled, targeted, weaponData, actorData, modifiers) {
+        let targetData = foundry.utils.expandObject(foundry.utils.flattenObject(targeted.first().actor.system))
 
-        let targetData = expandObject(flattenObject(targeted.first().actor.system))
-        //apply changes from dialog
-        if (weaponData.range === 0)
-            actorData.modifiers.hitroll.melee.bonus += modifiers.hitroll
-        else
-            actorData.modifiers.hitroll.ranged.bonus += modifiers.hitroll
-
-        actorData.modifiers.woundroll.bonus += modifiers.woundroll
-
-        if (modifiers.overwatch)
-            actorData.modifiers.overwatch = modifiers.overwatchValue
-
-        actorData.modifiers.grants.cover |= modifiers.cover
         weaponData.items = weaponData.items.filter(x => !x.system.optional || modifiers.tags.includes(x._id))
         if (weaponData.items.find(x => x.name.toUpperCase() == "IGNORES COVER"))
             actorData.modifiers.grants.cover=false
@@ -97,14 +85,27 @@ export class WarhammerItem extends Item {
             actorData.modifiers.woundroll.bonus+=1
 
         //apply .grants to target
-        this._applymodifiers(actorData.modifiers.grants, targetData.modifiers)
+        this.actor._applymodifiers(actorData.modifiers.grants, targetData.modifiers)
 
 
         //apply .grants to actor
-        this._applymodifiers(targetData.modifiers.grants, actorData.modifiers)
+        this.actor._applymodifiers(targetData.modifiers.grants, actorData.modifiers)
 
         //apply weapon overrides
-        this._applymodifiers(actorData.modifiers.weapon, weaponData)
+        // this._applymodifiers(actorData.modifiers.weapon, weaponData)
+
+        //apply changes from dialog
+        if (weaponData.range === 0)
+            actorData.modifiers.hitroll.melee.bonus = modifiers.hitroll
+        else
+            actorData.modifiers.hitroll.ranged.bonus = modifiers.hitroll
+
+        actorData.modifiers.woundroll.bonus = modifiers.woundroll
+
+        if (modifiers.overwatch)
+            actorData.modifiers.overwatch = modifiers.overwatchValue
+
+        actorData.modifiers.grants.cover |= modifiers.cover
 
         let completeAttackData = {
             models: controlled,
@@ -151,7 +152,7 @@ export class WarhammerItem extends Item {
                 bonusattacks += "+" + Math.floor(targeted.size/5)
 
             let roll = new Roll(weaponData.attacks + bonusattacks);
-            await roll.evaluate({async: true});
+            await roll.evaluate();
             if (!roll.isDeterministic)
                 completeAttackData.allRolls.push(roll)
             completeAttackData.stats.attacks += roll.total
@@ -180,7 +181,7 @@ export class WarhammerItem extends Item {
             }
             //do attack
             for (let j = 0; j < roll.total; j++) {
-                let results = await this._singleAttackRoll(model, expandObject(flattenObject(weaponData)), expandObject(flattenObject(actorData)), expandObject(flattenObject(targetData)), targeted);
+                let results = await this._singleAttackRoll(model, foundry.utils.expandObject(foundry.utils.flattenObject(weaponData)), foundry.utils.expandObject(foundry.utils.flattenObject(actorData)), foundry.utils.expandObject(foundry.utils.flattenObject(targetData)), targeted);
 
                 //update stats
                 if (!results.hitroll.isDeterministic)
@@ -230,7 +231,7 @@ export class WarhammerItem extends Item {
             if (weaponData.items.find(x => x.name.toUpperCase() == "HAZARDOUS")){
                 singleUnitAttackData.hazardousHtml = "Hazardous check:"
                 let roll = new Roll('1d6');
-                await roll.evaluate({async: true});
+                await roll.evaluate();
                 singleUnitAttackData.hazardousHtml += await roll.render()
                 if (roll.total === 1){
                     if (actorData.tags.some( x => ["CHARACTER", "MONSTER", "VEHICLE"].includes(x.toUpperCase()))) {
@@ -291,7 +292,7 @@ export class WarhammerItem extends Item {
             }
 
             let hroll = new Roll(hitstr);
-            await hroll.evaluate({async: true});
+            await hroll.evaluate();
             let hit = hroll.total >= hitTargetNum
             if (hroll.dice.find(x => x.values.includes(1)))
                 hit = false
@@ -326,7 +327,7 @@ export class WarhammerItem extends Item {
         }
         let numhits = 1
         if (critHit && weaponData.items.find(x => x.name.toUpperCase() === "SUSTAINED HITS")){
-            numhits += (await (new Roll(weaponData.items.find(x => x.name.toUpperCase() === "SUSTAINED HITS").system.value)).evaluate({async: true})).total
+            numhits += (await (new Roll(weaponData.items.find(x => x.name.toUpperCase() === "SUSTAINED HITS").system.value)).evaluate()).total
         }
         result.hits = numhits
         for (let i = 0; i < numhits; i++) {
@@ -360,11 +361,11 @@ export class WarhammerItem extends Item {
                 }
                 let woundstr = `1d6`
                 if (actorData.modifiers.woundroll.bonus)
-                    woundstr += "+" + Math.max(-1, Math.min(1, (await (new Roll("0+" + actorData.modifiers.woundroll.bonus)).evaluate({async: true})).total))
+                    woundstr += "+" + Math.max(-1, Math.min(1, (await (new Roll("0+" + actorData.modifiers.woundroll.bonus)).evaluate()).total))
                 let successnum = this._woundMinRoll(weaponData.strength, targetData.stats.toughness)
 
                 let wroll = new Roll(woundstr);
-                await wroll.evaluate({async: true});
+                await wroll.evaluate();
                 subresult.wounded = wroll.total >= successnum
 
                 if (wroll.dice.find(x => x.values.includes(1)))
@@ -408,7 +409,7 @@ export class WarhammerItem extends Item {
                 let {savemod, savetarget} = await this._calcSaveTarget(weaponData, targetData);
 
                 let sroll = new Roll(`1d6` + savemod);
-                await sroll.evaluate({async: true});
+                await sroll.evaluate();
                 subresult.save = sroll
                 subresult.notsaved = sroll.total < savetarget
                 if (sroll.dice.find(x => x.values.includes(1)))
@@ -427,7 +428,7 @@ export class WarhammerItem extends Item {
                 damageformula = `(${damageformula})d6cs<${targetData.feelnopain}`
             }
             let droll = new Roll(damageformula);
-            await droll.evaluate({async: true});
+            await droll.evaluate();
             subresult.damage = droll
         }
         return result
@@ -440,7 +441,7 @@ export class WarhammerItem extends Item {
         if (targetData.modifiers.cover &&
             !(targetData.stats.save >= 3 && weaponData.ap === 0))
             savemod += "+1[cover]"
-        let modifiedSavestat = targetData.stats.save - (await (new Roll(savemod)).evaluate({async: true})).total
+        let modifiedSavestat = targetData.stats.save - (await (new Roll(savemod)).evaluate()).total
 
         let savetarget = targetData.stats.save
         if (targetData.invulnsave && modifiedSavestat > targetData.invulnsave){
@@ -519,7 +520,7 @@ export class WarhammerItem extends Item {
             speaker: ChatMessage.getSpeaker(),
             content: html,
             user: game.user.id,
-            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            // style: CONST.CHAT_MESSAGE_STYLES.ROLL,
             sound: CONFIG.sounds.dice,
             rolls: data.allRolls
         }, messageData);
@@ -595,27 +596,5 @@ export class WarhammerItem extends Item {
         }
         return false
     }
-    _applymodifiers(src, dest){
-        if (!src)
-            return
-        for (const key in src) {
-            // simple type
-            if (typeof src[key] !== "object"){
-                dest[key] = src[key]
-                continue
-            }
-            //ignore nulls
-            if (src[key] === null){
-                continue
-            }
-            //append arrays
-            if (src[key] instanceof Array){
-                if (src[key].length > 0)
-                    dest[key].concat(src[key])
-                continue
-            }
-            //recursive on objects
-            this._applymodifiers(src[key], dest[key])
-        }
-    }
+
 }

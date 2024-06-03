@@ -21,7 +21,7 @@ An attempt at implementing the rules of wh40k-10th into foundry, as I was dissat
 - Anything above the model level: units, turns, army, VP or CP tracking
 - Automatic cover from LOS or any other terrain effect, apply cover manually 
 - Auras
-- conditional active effects
+- Conditional active effects
 
 ---
 ### Active effects guide
