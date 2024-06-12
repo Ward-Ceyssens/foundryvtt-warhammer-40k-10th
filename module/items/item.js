@@ -306,7 +306,7 @@ export class WarhammerItem extends Item {
             if (this._shouldReroll(actorData.modifiers.hitroll[isMelee ? "melee" : "ranged"].reroll, hroll, hit)){
 
                 //reroll updates dice but not rest of roll like the total
-                hroll.dice[0].reroll("r<7")
+                await hroll.dice[0].reroll("r<7")
                 hroll = Roll.fromTerms(hroll.terms)
                 result.hitroll= hroll
                 hit = hroll.total >= hitTargetNum
@@ -380,7 +380,7 @@ export class WarhammerItem extends Item {
                 }
                 //rerolls
                 if (this._shouldReroll(actorData.modifiers.woundroll.reroll, wroll, subresult.wounded)){
-                    wroll.dice[0].reroll("r<7")
+                    await wroll.dice[0].reroll("r<7")
                     wroll = Roll.fromTerms(wroll.terms)
                     subresult.wounded = wroll.total >= successnum
                     critWound = false;
