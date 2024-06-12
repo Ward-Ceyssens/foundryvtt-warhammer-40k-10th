@@ -1,4 +1,4 @@
-import {FACTIONS, SYSTEM_ID} from "./constants.js";
+import {FACTIONS, mmToInch, SYSTEM_ID} from "./constants.js";
 
 /** * Extend the base TokenDocument
  * @extends {TokenDocument}
@@ -15,28 +15,18 @@ export class WarhammerTokenDocument extends TokenDocument {
     }
 }
 
-export class WarhammerTokenConfig extends TokenConfig {
-
-
-    async _renderInner(...args) {
-        let injectedHTML = `
-            <div class="form-group slim">
-            <label>Art Offset</label>
-            <div class="form-fields">
-                <label>X</label>
-                <input type="number" step="1" name="flags.${SYSTEM_ID}.offX" placeholder="px" ${this.object.getFlag(SYSTEM_ID, "offX") ? "value=\""+this.object.getFlag(SYSTEM_ID, "offX")+"\"" : ""}>
-                <label>Y</label>
-                <input type="number" step="1" name="flags.${SYSTEM_ID}.offY" placeholder="px" ${this.object.getFlag(SYSTEM_ID, "offY") ? "value=\""+this.object.getFlag(SYSTEM_ID, "offY")+"\"" : ""}>
-            </div>
-        </div>
-`
-        let r = await super._renderInner(...args);
-        r.find("[name=width]").closest(".form-group").after(injectedHTML)
-        return r;
-    }
-}
-
 export class WarhammerToken extends Token {
+
+    getSize() {
+        if (!this.actor?.system?.baseSize)
+            return super.getSize();
+
+        let size = mmToInch(this.actor?.system?.baseSize)*100;
+        return {
+            width: size,
+            height: size
+        }
+    }
 
     getShape() {
         return new PIXI.Circle(this.w/2,this.w/2, this.w/2);

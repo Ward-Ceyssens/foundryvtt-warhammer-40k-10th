@@ -10,7 +10,7 @@ import {WarhammerAbilitySheet} from "./items/warhammer-ability-sheet.js";
 import {WarhammerWeaponSheet} from "./items/warhammer-weapon-sheet.js";
 import {WarhammerWTagSheet} from "./items/warhammer-wtag-sheet.js";
 import {WarhammerRuler} from "./warhammerRuler.js";
-import {WarhammerToken, WarhammerTokenConfig, WarhammerTokenDocument} from "./token.js";
+import {WarhammerToken, WarhammerTokenDocument} from "./token.js";
 import "../libs/awesomplete/awesomplete.js"
 import {WarhammerObjectiveData} from "./actors/warhammerObjectiveData.js";
 import {WarhammerObjectiveSheet} from "./actors/objective-sheet.js";
@@ -55,7 +55,7 @@ Hooks.once('init', function() {
     Items.registerSheet(SYSTEM_ID, WarhammerWeaponSheet, { types: ["weapon"], makeDefault: true });
     Items.registerSheet(SYSTEM_ID, WarhammerWTagSheet, { types: ["wtag"], makeDefault: true });
 
-    DocumentSheetConfig.registerSheet(TokenDocument, SYSTEM_ID, WarhammerTokenConfig, { makeDefault: true });
+    // DocumentSheetConfig.registerSheet(TokenDocument, SYSTEM_ID, WarhammerTokenConfig, { makeDefault: true });
 
     game.settings.register(SYSTEM_ID, 'melee_generosity', {
         name: 'Melee Generosity',
@@ -185,6 +185,20 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
     })
 })
 
+Hooks.on("renderTokenConfig", function (config, html, data) {
+    let injectedHTML = `
+            <div class="form-group slim">
+            <label>Art Offset</label>
+            <div class="form-fields">
+                <label>X</label>
+                <input type="number" step="1" name="flags.${SYSTEM_ID}.offX" placeholder="px" ${config.token.getFlag(SYSTEM_ID, "offX") ? "value=\""+config.token.getFlag(SYSTEM_ID, "offX")+"\"" : ""}>
+                <label>Y</label>
+                <input type="number" step="1" name="flags.${SYSTEM_ID}.offY" placeholder="px" ${config.token.getFlag(SYSTEM_ID, "offY") ? "value=\""+config.token.getFlag(SYSTEM_ID, "offY")+"\"" : ""}>
+            </div>
+        </div>
+`
+    html.find("[name=width]").closest(".form-group").after(injectedHTML)
+})
 
 let updateObjectives = foundry.utils.debounce(() => {
         let objectives = canvas.tokens.placeables.filter(x => x.actor?.type === "objective")
