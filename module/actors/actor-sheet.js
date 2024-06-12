@@ -170,7 +170,7 @@ export class WarhammerModelSheet extends ActorSheet {
         // Get the type of item to create.
         const type = header.dataset.type;
         // Grab any data associated with this control.
-        const system = duplicate(header.dataset);
+        const system = foundy.utils.duplicate(header.dataset);
         // Initialize a default name.
         const name = `New ${type.capitalize()}`;
         // Prepare the item object.

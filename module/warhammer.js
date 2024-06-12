@@ -180,7 +180,7 @@ Hooks.on("renderActiveEffectConfig", function (application, html, data)  {
     let inputs = html.find(".key input")
     $.map( inputs, input => {
         new Awesomplete(input, {
-            list: Object.keys(flattenObject(application.object.parent.system)).map(s => "system."+s)
+            list: Object.keys(foundry.utils.flattenObject(application.object.parent.system)).map(s => "system."+s)
         });
     })
 })
