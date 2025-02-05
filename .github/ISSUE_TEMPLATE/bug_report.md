@@ -31,3 +31,6 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+**Roster Import bug**
+Make sure to append the roster file causing the issue to bug report
